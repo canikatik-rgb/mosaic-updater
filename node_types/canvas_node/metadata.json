@@ -1,0 +1,23 @@
+{
+    "id": "canvas_node",
+    "name": {
+        "en": "Canvas Node",
+        "tr": "Tuval Node",
+        "es": "Nodo Lienzo",
+        "fr": "Nœud Canevas",
+        "de": "Leinwand-Knoten"
+    },
+    "description": {
+        "en": "A nested infinite canvas",
+        "tr": "İç içe sonsuz tuval",
+        "es": "Un lienzo infinito anidado",
+        "fr": "Un canevas infini imbriqué",
+        "de": "Eine verschachtelte unendliche Leinwand"
+    },
+    "icon": "fa-palette",
+    "version": "1.0",
+    "tags": [
+        "advanced",
+        "structure"
+    ]
+}

@@ -1,0 +1,795 @@
+/**
+ * Unified Bar Styles
+ * Modern floating action bar with glassmorphism
+ */
+
+/* ========== Main Bar ========== */
+.unified-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    /* Moved to Right */
+    left: auto;
+    /* Reset Left */
+    transform: none;
+    /* Reset Transform */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    z-index: 3000;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Removed hover lift effect - keeping bar stable like action bar */
+/* .unified-bar:hover transform removed intentionally */
+
+/* HIDE LEGACY ELEMENTS via generic selectors but EXCLUDE unified bar items */
+button[title*="Undo"]:not(.ub-btn),
+button[title*="Redo"]:not(.ub-btn),
+.undo-btn:not(.ub-btn),
+.redo-btn:not(.ub-btn) {
+    display: none !important;
+}
+
+/* Hide potential history controls container if it exists */
+.history-controls {
+    display: none !important;
+}
+
+/* Hide Objects Panel Toggle */
+.objects-toggle-btn {
+    display: none !important;
+}
+
+.objects-panel-container {
+    display: none !important;
+}
+
+/* Hide Old Action Bar internal elements */
+#action-bar .sync-status,
+#action-bar .user-profile,
+#action-bar .avatar {
+    display: none !important;
+}
+
+/* Sections */
+.ub-section {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ub-left {
+    padding-right: 8px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ub-right {
+    padding-left: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ub-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
+}
+
+/* ========== Buttons ========== */
+.ub-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    font-size: 14px;
+}
+
+.ub-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.ub-btn:active {
+    transform: scale(0.95);
+}
+
+.ub-menu-btn {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ========== Sync Indicator ========== */
+.ub-sync {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.ub-sync i {
+    font-size: 12px;
+}
+
+.ub-sync.saved {
+    color: #4CAF50;
+}
+
+.ub-sync.syncing {
+    color: #FFB74D;
+}
+
+.ub-sync.error {
+    color: #EF5350;
+}
+
+/* ========== User Avatar ========== */
+.ub-user {
+    width: 32px;
+    height: 32px;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    /* Soft square */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.ub-user img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important;
+    display: block;
+    border-radius: 0 !important;
+    clip-path: none !important;
+}
+
+.ub-user:hover {
+    transform: scale(1.1);
+}
+
+.ub-avatar {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* ========== Popup Menus ========== */
+.ub-popup {
+    position: fixed;
+    bottom: 80px;
+    /* Position relative to screen bottom */
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    padding: 8px;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    z-index: 3001;
+}
+
+.ub-popup.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#ub-menu-popup {
+    right: 20px;
+}
+
+/* Fix Object Popup Position: Align with the Objects button */
+#ub-objects-popup {
+    left: auto;
+    right: 120px;
+    /* Approximate position of objects button from right */
+    transform: translateY(10px);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#ub-objects-popup.show {
+    transform: translateY(0);
+}
+
+.ub-popup-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 4px;
+}
+
+.ub-popup-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+
+.ub-popup-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.ub-popup-item i {
+    width: 16px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.ub-popup-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 4px 0;
+}
+
+/* ========== Settings Popup ========== */
+.ub-settings-popup {
+    right: 20px;
+    min-width: 240px;
+    max-width: 260px;
+    overflow: hidden;
+}
+
+.ub-settings-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+}
+
+.ub-settings-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    clip-path: none !important;
+    background: linear-gradient(135deg, #67a772 0%, #4a8a55 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+
+.ub-settings-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important;
+    display: block;
+    border-radius: 0 !important;
+    clip-path: none !important;
+}
+
+.ub-settings-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ub-settings-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ub-settings-email {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ub-signout-btn {
+    color: #f87171 !important;
+}
+
+.ub-signout-btn:hover {
+    background: rgba(248, 113, 113, 0.15) !important;
+}
+
+/* Avatar wrapper with status dot */
+.ub-settings-avatar-wrapper {
+    position: relative;
+}
+
+.ub-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(30, 30, 30, 0.95);
+}
+
+.ub-status-dot.online {
+    background: #4ade80;
+}
+
+.ub-status-dot.offline {
+    background: #f97316;
+}
+
+.ub-status-dot.pending {
+    background: #9ca3af;
+}
+
+/* Online Toggle Row */
+.ub-online-toggle-row {
+    justify-content: space-between;
+    cursor: default;
+    pointer-events: auto;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.ub-online-toggle-row:hover {
+    background: transparent !important;
+}
+
+.ub-online-toggle-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Toggle Switch */
+.ub-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.ub-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ub-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 22px;
+    transition: 0.3s;
+}
+
+.ub-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.ub-toggle-switch input:checked+.ub-toggle-slider {
+    background: #4ade80;
+}
+
+.ub-toggle-switch input:checked+.ub-toggle-slider:before {
+    transform: translateX(18px);
+}
+
+/* Light mode settings popup */
+body:not(.night-mode) .ub-settings-name {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+body:not(.night-mode) .ub-settings-email {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+body:not(.night-mode) .ub-signout-btn {
+    color: #dc2626 !important;
+}
+
+body:not(.night-mode) .ub-signout-btn:hover {
+    background: rgba(220, 38, 38, 0.1) !important;
+}
+
+/* ========== Objects List ========== */
+.ub-objects-popup {
+    min-width: 220px;
+}
+
+.ub-objects-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.ub-objects-empty {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+}
+
+.ub-objects-section {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.ub-object-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+}
+
+.ub-object-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ub-object-item i {
+    font-size: 12px;
+    opacity: 0.6;
+    width: 16px;
+    text-align: center;
+}
+
+.ub-object-item span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ub-object-count {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========== Minimap ========== */
+/* Always visible tool at bottom-left - no header */
+.canvas-minimap {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: auto;
+    width: 180px;
+    height: 120px;
+    /* Fixed height */
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    z-index: 2999;
+    overflow: hidden;
+}
+
+.canvas-minimap.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+}
+
+.minimap-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Connections SVG overlay */
+.minimap-connections {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.minimap-node {
+    position: absolute;
+    border-radius: 3px;
+    opacity: 0.95;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.minimap-node i {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.minimap-viewport {
+    position: absolute;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.minimap-empty {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    text-align: center;
+    padding: 45px 10px;
+}
+
+/* ========== Node Highlight Animation ========== */
+.node.highlight {
+    animation: nodeHighlight 1s ease;
+}
+
+@keyframes nodeHighlight {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+}
+
+/* ========== Hide Old Menu Button ========== */
+#menu-button {
+    display: none !important;
+}
+
+#dropdown-menu {
+    display: none !important;
+}
+
+/* ========== Hide Legacy Drive Status Indicator ========== */
+#drive-status-indicator {
+    display: none !important;
+}
+
+/* ========== Hide History Buttons (Created by history.js) ========== */
+#history-buttons,
+.history-buttons {
+    display: none !important;
+}
+
+/* ========== LIGHT MODE STYLES ========== */
+/* Default is dark mode - these override for light mode (when night-mode is NOT active) */
+
+body:not(.night-mode) .unified-bar {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode hover - removed transform, keeping consistent with dark mode */
+
+body:not(.night-mode) .ub-btn {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+body:not(.night-mode) .ub-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+body:not(.night-mode) .ub-menu-btn {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+body:not(.night-mode) .ub-sync {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+body:not(.night-mode) .ub-sync.saved {
+    color: #2E7D32;
+}
+
+body:not(.night-mode) .ub-sync.syncing {
+    color: #F57C00;
+}
+
+body:not(.night-mode) .ub-sync.error {
+    color: #C62828;
+}
+
+body:not(.night-mode) .ub-left {
+    border-right-color: rgba(0, 0, 0, 0.1);
+}
+
+body:not(.night-mode) .ub-right {
+    border-left-color: rgba(0, 0, 0, 0.1);
+}
+
+body:not(.night-mode) .ub-divider {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Light mode popups */
+body:not(.night-mode) .ub-popup {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+body:not(.night-mode) .ub-popup-header {
+    color: rgba(0, 0, 0, 0.5);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+body:not(.night-mode) .ub-popup-item {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+body:not(.night-mode) .ub-popup-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.95);
+}
+
+body:not(.night-mode) .ub-popup-divider {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode objects list */
+body:not(.night-mode) .ub-objects-empty {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body:not(.night-mode) .ub-objects-section {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body:not(.night-mode) .ub-object-item {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+body:not(.night-mode) .ub-object-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body:not(.night-mode) .ub-object-count {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.5);
+}
+
+/* Light mode minimap */
+body:not(.night-mode) .canvas-minimap {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+body:not(.night-mode) .minimap-header {
+    color: rgba(0, 0, 0, 0.6);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+body:not(.night-mode) .minimap-close {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body:not(.night-mode) .minimap-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.8);
+}
+
+body:not(.night-mode) .minimap-content {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 600px) {
+    .unified-bar {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        width: auto;
+    }
+
+    .ub-sync span {
+        display: none;
+    }
+
+    .ub-left {
+        padding-right: 4px;
+    }
+}
+
+/* Minimap Loading State */
+.minimap-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 24px;
+    z-index: 10;
+}
+
+/* Make spinner visible in light mode too */
+.minimap-loading {
+    color: #888 !important;
+}
+
+/* Off-screen viewport indicator pulse animation */
+@keyframes minimapPulse {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0.7;
+    }
+}

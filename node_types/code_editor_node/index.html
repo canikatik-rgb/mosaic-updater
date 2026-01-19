@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            background: #272822;
+            /* Monokai bg */
+            color: #f8f8f2;
+            font-family: system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        #toolbar {
+            height: 30px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 1px solid #444;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        #editor {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        select {
+            background: #444;
+            color: white;
+            border: 1px solid #555;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar">
+        <select id="lang-select">
+            <option value="javascript">JavaScript</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="python">Python</option>
+            <option value="json">JSON</option>
+            <option value="markdown">Markdown</option>
+        </select>
+        <select id="theme-select">
+            <option value="monokai">Monokai</option>
+            <option value="github">GitHub</option>
+            <option value="tomorrow_night">Tomorrow Night</option>
+            <option value="twilight">Twilight</option>
+        </select>
+    </div>
+    <div id="editor"></div>
+
+    <!-- SDK -->
+    <script src="../../js/MosaicNode.js"></script>
+
+    <!-- Ace Editor CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+
+    <script>
+        let editor;
+
+        // Initialize Ace
+        function initEditor() {
+            editor = ace.edit("editor");
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/javascript");
+            editor.setFontSize(14);
+            editor.setShowPrintMargin(false);
+
+            // Notify host of changes
+            editor.session.on('change', () => {
+                const content = editor.getValue();
+                window.Mosaic.saveData({ content });
+            });
+        }
+
+        initEditor();
+
+        // Handle Toolbar
+        document.getElementById('lang-select').addEventListener('change', (e) => {
+            const mode = "ace/mode/" + e.target.value;
+            editor.session.setMode(mode);
+            window.Mosaic.saveData({ language: e.target.value });
+        });
+
+        document.getElementById('theme-select').addEventListener('change', (e) => {
+            const theme = "ace/theme/" + e.target.value;
+            editor.setTheme(theme);
+            window.Mosaic.saveData({ theme: e.target.value });
+        });
+
+        // Mosaic SDK Logic
+        window.Mosaic.onDataLoaded = (data) => {
+            if (data.content !== undefined) {
+                // Determine if we need to update value to avoid cursor jump
+                if (editor.getValue() !== data.content) {
+                    editor.setValue(data.content, -1); // -1 moves cursor to start
+                }
+            }
+            if (data.language) {
+                editor.session.setMode("ace/mode/" + data.language);
+                document.getElementById('lang-select').value = data.language;
+            }
+            if (data.theme) {
+                editor.setTheme("ace/theme/" + data.theme);
+                document.getElementById('theme-select').value = data.theme;
+            }
+        };
+
+        // Resize handling
+        // Since we are using flex, resizing the iframe automatically resizes the container div,
+        // but Ace needs to be told to resize.
+        window.addEventListener('resize', () => {
+            editor.resize();
+        });
+
+    </script>
+</body>
+
+</html>

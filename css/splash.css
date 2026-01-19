@@ -1,0 +1,122 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1e1e1e;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    -webkit-app-region: drag;
+    /* Allow dragging the window */
+    overflow: hidden;
+}
+
+.splash-container {
+    text-align: center;
+    width: 300px;
+    padding: 20px;
+}
+
+.splash-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.3));
+    animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+}
+
+.logo-container {
+    margin-bottom: 30px;
+}
+
+.logo-container h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 15px 0 0 0;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.loader {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #60A5FA, #34D399);
+    border-radius: 2px;
+    animation: loading 1.5s infinite ease-in-out;
+}
+
+@keyframes loading {
+    0% {
+        left: -40%;
+        width: 30%;
+    }
+
+    50% {
+        left: 40%;
+        width: 50%;
+    }
+
+    100% {
+        left: 100%;
+        width: 30%;
+    }
+}
+
+.status-text {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    height: 14px;
+    transition: opacity 0.15s ease;
+}
+
+.version-text {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+}

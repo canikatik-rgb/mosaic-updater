@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            background: #252525;
+            color: #eee;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #preview {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        #preview svg {
+            width: 100%;
+            height: 100%;
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .row {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        label {
+            font-size: 11px;
+            color: #aaa;
+            width: 40px;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        select {
+            flex: 1;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+    </style>
+    <!-- QRCode Lib -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+
+<body>
+
+    <div id="preview">
+        <!-- SVG goes here -->
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <input type="text" id="text-input" placeholder="Enter text or connect node..." data-tr="placeholder">
+        </div>
+
+        <div class="row">
+            <label data-tr="color">Color</label>
+            <input type="color" id="color" value="#000000">
+        </div>
+        <div class="row">
+            <label data-tr="background">Background</label>
+            <input type="color" id="bgcolor" value="#ffffff">
+        </div>
+        <div class="row">
+            <label data-tr="correction">Correction</label>
+            <select id="correctionLevel">
+                <option value="L">L (7%)</option>
+                <option value="M" selected>M (15%)</option>
+                <option value="Q">Q (25%)</option>
+                <option value="H">H (30%)</option>
+            </select>
+        </div>
+    </div>
+
+    <script src="../../js/MosaicNode.js"></script>
+    <script>
+        // === SELF-CONTAINED TRANSLATIONS ===
+        const translations = {
+            en: {
+                color: "Color",
+                background: "Background",
+                correction: "Correction",
+                placeholder: "Enter text or connect node..."
+            },
+            tr: {
+                color: "Renk",
+                background: "Arkaplan",
+                correction: "Düzeltme",
+                placeholder: "Metin girin veya node bağlayın..."
+            },
+            es: {
+                color: "Color",
+                background: "Fondo",
+                correction: "Corrección",
+                placeholder: "Introduce texto o conecta nodo..."
+            },
+            fr: {
+                color: "Couleur",
+                background: "Arrière-plan",
+                correction: "Correction",
+                placeholder: "Saisir texte ou connecter..."
+            },
+            de: {
+                color: "Farbe",
+                background: "Hintergrund",
+                correction: "Korrektur",
+                placeholder: "Text eingeben oder verbinden..."
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        function t(key) {
+            return translations[currentLanguage]?.[key] || translations.en[key] || key;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-tr]').forEach(el => {
+                const key = el.getAttribute('data-tr');
+                let val = t(key);
+
+                if (el.tagName === 'INPUT' && el.type === 'text') {
+                    el.placeholder = val;
+                } else if (el.tagName === 'INPUT' && el.type === 'color' && key === 'background') {
+                    el.title = val; // Apply translation to title for bgColor
+                } else {
+                    el.textContent = val;
+                }
+            });
+        }
+        const preview = document.getElementById('preview');
+        const textInput = document.getElementById('text-input');
+        const fgColor = document.getElementById('color');
+        const bgColor = document.getElementById('bgcolor');
+        const correctionLevel = document.getElementById('correctionLevel');
+
+        // Default text if nothing provided
+        let state = {
+            text: 'Mosaic QR',
+            options: {
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                },
+                errorCorrectionLevel: 'M',
+                margin: 1
+            }
+        };
+
+
+
+        function generate() {
+            // Generate even if empty text (shows empty box or error?) 
+            // QRCode lib requires text.
+            const txt = state.text || ' '; // Use space if empty to avoid crash
+
+            QRCode.toString(txt, {
+                type: 'svg',
+                ...state.options
+            }, function (err, string) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+
+                // Display
+                preview.innerHTML = string;
+                // Force SVG to be responsive within the container
+                const svg = preview.querySelector('svg');
+                if (svg) {
+                    svg.removeAttribute('width');
+                    svg.removeAttribute('height');
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                }
+
+                // Update Preview BG
+                preview.style.backgroundColor = state.options.color.light;
+
+                // Send to Connected Nodes - SVG type for Canvas compatibility
+                window.Mosaic.send({
+                    type: 'svg',              // SVG type for Canvas Node
+                    value: string,           // SVG string
+                    format: 'svg',          // Data format
+                    metadata: {
+                        text: state.text,
+                        foreground: state.options.color.dark,
+                        background: state.options.color.light,
+                        errorCorrection: state.options.errorCorrectionLevel
+                    }
+                });
+            });
+        }
+
+        function updateState() {
+            state.text = textInput.value;
+            state.options.color.dark = fgColor.value;
+            state.options.color.light = bgColor.value;
+            state.options.errorCorrectionLevel = correctionLevel.value;
+
+            generate();
+            window.Mosaic.saveData(state);
+        }
+
+        // Listeners
+        textInput.addEventListener('input', updateState);
+        fgColor.addEventListener('input', updateState);
+        bgColor.addEventListener('input', updateState);
+        correctionLevel.addEventListener('change', updateState);
+
+        // Input from other nodes - EXPECT JSON FORMAT
+        window.Mosaic.on('input', (data) => {
+            console.log('[QR] Received input:', data);
+
+            if (!data || !data.type) return;
+
+            // SDP Compatibility
+            const value = data.payload ? data.payload.value : data.value;
+            const type = data.type;
+
+            // Handle text input
+            if (type === 'text' && typeof value === 'string') {
+                state.text = value;
+                textInput.value = state.text;
+                updateState();
+            }
+            // Could handle other types in future (color, etc.)
+        });
+
+        // Initialize
+        window.Mosaic.onDataLoaded = (data) => {
+            if (data && data.language) {
+                currentLanguage = data.language;
+                applyTranslations();
+            }
+
+            if (data) {
+                if (data.text !== undefined) {
+                    state.text = data.text;
+                    textInput.value = data.text;
+                }
+                if (data.options) {
+                    if (data.options.color) {
+                        if (data.options.color.dark !== undefined) {
+                            state.options.color.dark = data.options.color.dark;
+                            fgColor.value = data.options.color.dark;
+                        }
+                        if (data.options.color.light !== undefined) {
+                            state.options.color.light = data.options.color.light;
+                            bgColor.value = data.options.color.light;
+                        }
+                    }
+                    if (data.options.errorCorrectionLevel !== undefined) {
+                        state.options.errorCorrectionLevel = data.options.errorCorrectionLevel;
+                        correctionLevel.value = data.options.errorCorrectionLevel;
+                    }
+                }
+                generate();
+            }
+        };
+    </script>
+</body>
+
+</html>

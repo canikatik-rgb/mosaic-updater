@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            background: #252525;
+            color: #eee;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            width: 50px;
+            color: #888;
+        }
+
+        input[type="number"] {
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 4px;
+            border-radius: 4px;
+            width: 60px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+        }
+
+        .header {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
+        }
+
+        #status {
+            margin-top: auto;
+            color: #4caf50;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">Transform Layout</div>
+
+    <div class="row">
+        <label>X</label>
+        <input type="number" id="x" value="0">
+    </div>
+    <div class="row">
+        <label>Y</label>
+        <input type="number" id="y" value="0">
+    </div>
+    <div class="row">
+        <label>Rotate</label>
+        <input type="number" id="rotate" value="0">
+        <input type="range" id="rotateRange" min="0" max="360" value="0">
+    </div>
+    <div class="row">
+        <label>Scale</label>
+        <input type="number" id="scale" value="1" step="0.1">
+        <input type="range" id="scaleRange" min="0.1" max="5" step="0.1" value="1">
+    </div>
+    <div class="row">
+        <label>Z-Index</label>
+        <input type="number" id="zIndex" value="1" step="1">
+    </div>
+
+    <div id="status">Waiting for input...</div>
+
+    <script src="../../js/MosaicNode.js"></script>
+    <script>
+        const inputs = {
+            x: document.getElementById('x'),
+            y: document.getElementById('y'),
+            rotate: document.getElementById('rotate'),
+            rotateRange: document.getElementById('rotateRange'),
+            scale: document.getElementById('scale'),
+            scaleRange: document.getElementById('scaleRange'),
+            zIndex: document.getElementById('zIndex')
+        };
+
+        let currentContent = null;
+
+        // Sync Range/Input
+        inputs.rotate.addEventListener('input', () => update('rotate', inputs.rotate.value));
+        inputs.rotateRange.addEventListener('input', () => update('rotate', inputs.rotateRange.value));
+        inputs.scale.addEventListener('input', () => update('scale', inputs.scale.value));
+        inputs.scaleRange.addEventListener('input', () => update('scale', inputs.scaleRange.value));
+        inputs.x.addEventListener('input', () => update());
+        inputs.y.addEventListener('input', () => update());
+        inputs.zIndex.addEventListener('input', () => update());
+
+        function update(field, value) {
+            if (field) {
+                if (inputs[field]) inputs[field].value = value;
+                if (inputs[field + 'Range']) inputs[field + 'Range'].value = value;
+            }
+
+            const transform = {
+                x: parseInt(inputs.x.value) || 0,
+                y: parseInt(inputs.y.value) || 0,
+                rotation: parseInt(inputs.rotate.value) || 0,
+                scale: parseFloat(inputs.scale.value) || 1,
+                zIndex: parseInt(inputs.zIndex.value) || 1
+            };
+
+            // Save State
+            window.Mosaic.saveData(transform);
+
+            // Send Output (Wrap Content)
+            if (currentContent) {
+                window.Mosaic.send({
+                    type: 'transformed_content',
+                    content: currentContent,
+                    transform: transform
+                });
+            }
+        }
+
+        // Handle Input
+        window.Mosaic.on('input', (data) => {
+            // SDP Compatibility: Unwrap if needed, or pass through entire object
+            // Transform node typically takes 'any' content and wraps it.
+            // If data is MosaicData, we should probably keep it as is or extract payload?
+            // Actually, 'transformed_content' type implies we are wrapping the ORIGINAL data.
+            currentContent = data;
+            document.getElementById('status').innerText = 'Content Active';
+            // Re-trigger output with new content but existing transform
+            update();
+        });
+
+        // Load State
+        window.Mosaic.onDataLoaded = (data) => {
+            if (data.x !== undefined) inputs.x.value = data.x;
+            if (data.y !== undefined) inputs.y.value = data.y;
+            if (data.rotation !== undefined) {
+                inputs.rotate.value = data.rotation;
+                inputs.rotateRange.value = data.rotation;
+            }
+            if (data.scale !== undefined) {
+                inputs.scale.value = data.scale;
+                inputs.scaleRange.value = data.scale;
+            }
+            if (data.zIndex !== undefined) inputs.zIndex.value = data.zIndex;
+        };
+
+    </script>
+</body>
+
+</html>

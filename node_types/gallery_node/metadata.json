@@ -1,0 +1,23 @@
+{
+    "id": "gallery_node",
+    "name": {
+        "en": "Gallery",
+        "tr": "Galeri",
+        "es": "Galería",
+        "fr": "Galerie",
+        "de": "Galerie"
+    },
+    "description": {
+        "en": "Display collection of images",
+        "tr": "Resim koleksiyonu görüntüle",
+        "es": "Mostrar colección de imágenes",
+        "fr": "Afficher une collection d'images",
+        "de": "Bildersammlung anzeigen"
+    },
+    "icon": "fa-images",
+    "version": "1.0",
+    "tags": [
+        "media",
+        "image"
+    ]
+}

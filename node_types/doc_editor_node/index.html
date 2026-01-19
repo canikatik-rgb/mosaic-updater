@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #toolbar-container {
+            border-bottom: 1px solid #ccc;
+            background: #f0f0f0;
+        }
+
+        #editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            /* Scroll here */
+            background: #f0f2f5;
+            /* Desk background */
+            align-items: center;
+            /* Center the page */
+            padding: 30px 0;
+        }
+
+        .ql-container {
+            width: auto;
+            flex: 0 0 auto;
+            border: none !important;
+            /* Remove Quill border */
+        }
+
+        .ql-editor {
+            width: 794px;
+            /* A4 Width (approx 21cm at 96dpi) */
+            min-height: 1123px;
+            /* A4 Height */
+            /* A4 Height */
+            background-color: transparent;
+            background-image: linear-gradient(#ffffff 1123px, transparent 1123px);
+            background-size: 100% 1143px;
+            /* 1123px page + 20px gap */
+            background-repeat: repeat-y;
+            box-shadow: none;
+            /* Shadow per page is hard in one div, disable or apply to container? */
+            /* We can use a drop-shadow filter? */
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+
+            padding: 60px 80px;
+            /* Document margins */
+            margin-bottom: 30px;
+            overflow-y: visible;
+            /* Grow with content */
+            color: #333;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Better formatting for embeds in page view */
+        .ql-editor img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* PAGE BREAK VISUAL */
+        .page-break {
+            height: 30px;
+            background: #f0f2f5;
+            border: none;
+            margin: 40px -80px;
+            /* Negative margin to span full width over padding */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -2px 5px rgba(0, 0, 0, 0.05);
+            position: relative;
+            cursor: default;
+        }
+
+        /* Print break */
+        @media print {
+            .page-break {
+                height: 0;
+                margin: 0;
+                background: transparent;
+                box-shadow: none;
+                break-after: page;
+            }
+        }
+
+        /* Custom HTML Embed Styling - Scale-based like images */
+        .html-embed-container {
+            display: inline-block;
+            position: relative;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f9f9f9;
+            cursor: default;
+        }
+
+        .html-embed-container:hover {
+            border-color: #007bff;
+        }
+
+        .html-embed-container .embed-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 6px 10px;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .html-embed-container .embed-header .scale-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .html-embed-container .embed-header button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .html-embed-container .embed-header button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .html-embed-container .embed-content {
+            width: 800px;
+            height: 600px;
+            transform-origin: top left;
+            overflow: hidden;
+        }
+
+        .html-embed-container iframe {
+            width: 800px;
+            height: 600px;
+            border: none;
+            display: block;
+            pointer-events: none;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar-container">
+        <span class="ql-formats">
+            <select class="ql-font"></select>
+            <select class="ql-size"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <select class="ql-color"></select>
+            <select class="ql-background"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+            <button class="ql-script" value="super"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-header" value="1"></button>
+            <button class="ql-header" value="2"></button>
+            <button class="ql-blockquote"></button>
+            <button class="ql-code-block"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-indent" value="-1"></button>
+            <button class="ql-indent" value="+1"></button>
+        </span>
+        <span class="ql-formats">
+            <!-- Page Break Button -->
+            <button class="ql-pagebreak" title="Page Break">
+                <i class="fas fa-cut" style="font-size:12px;"></i>
+                <span style="font-size:10px; font-weight:bold;">PB</span>
+            </button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-direction" value="rtl"></button>
+            <select class="ql-align"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-image"></button>
+            <button class="ql-video"></button>
+        </span>
+    </div>
+    <div id="editor-container"></div>
+
+    <!-- SDK & Libs -->
+    <script src="../../js/MosaicNode.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <script>
+        // ========== Custom HTML Embed Blot ==========
+        const BlockEmbed = Quill.import('blots/block/embed');
+
+        class HtmlEmbedBlot extends BlockEmbed {
+            static create(value) {
+                const node = super.create();
+                node.setAttribute('contenteditable', 'false');
+                node.classList.add('html-embed-container');
+
+                // Initial scale (0.5 = 50% of 800x600 = 400x300 displayed)
+                const scale = value.scale || 0.5;
+
+                // Create header with title and scale controls
+                const header = document.createElement('div');
+                header.className = 'embed-header';
+
+                const title = document.createElement('span');
+                title.textContent = '📎 ' + (value.sourceTitle || 'Connected Content');
+                header.appendChild(title);
+
+                const controls = document.createElement('div');
+                controls.className = 'scale-controls';
+
+                const zoomOut = document.createElement('button');
+                zoomOut.textContent = '−';
+                zoomOut.title = 'Küçült';
+                zoomOut.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const currentScale = parseFloat(node.dataset.scale) || 0.5;
+                    const newScale = Math.max(0.2, currentScale - 0.1);
+                    node.dataset.scale = newScale;
+                    contentWrapper.style.transform = `scale(${newScale})`;
+                    node.style.width = (800 * newScale) + 'px';
+                    node.style.height = (600 * newScale + 30) + 'px'; // +30 for header
+                };
+                controls.appendChild(zoomOut);
+
+                const zoomIn = document.createElement('button');
+                zoomIn.textContent = '+';
+                zoomIn.title = 'Büyüt';
+                zoomIn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const currentScale = parseFloat(node.dataset.scale) || 0.5;
+                    const newScale = Math.min(1.5, currentScale + 0.1);
+                    node.dataset.scale = newScale;
+                    contentWrapper.style.transform = `scale(${newScale})`;
+                    node.style.width = (800 * newScale) + 'px';
+                    node.style.height = (600 * newScale + 30) + 'px';
+                };
+                controls.appendChild(zoomIn);
+
+                header.appendChild(controls);
+                node.appendChild(header);
+
+                // Content wrapper with fixed internal size
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'embed-content';
+                contentWrapper.style.transform = `scale(${scale})`;
+
+                // Create iframe for HTML preview
+                const iframe = document.createElement('iframe');
+                iframe.sandbox = 'allow-same-origin allow-scripts';
+                iframe.srcdoc = value.html || '';
+                contentWrapper.appendChild(iframe);
+
+                node.appendChild(contentWrapper);
+
+                // Set container size based on scale
+                node.style.width = (800 * scale) + 'px';
+                node.style.height = (600 * scale + 30) + 'px';
+
+                // Store metadata
+                node.dataset.sourceId = value.sourceId || '';
+                node.dataset.sourceTitle = value.sourceTitle || '';
+                node.dataset.html = value.html || '';
+                node.dataset.scale = scale;
+
+                return node;
+            }
+
+            static value(node) {
+                return {
+                    html: node.dataset.html || '',
+                    sourceId: node.dataset.sourceId || '',
+                    sourceTitle: node.dataset.sourceTitle || '',
+                    scale: parseFloat(node.dataset.scale) || 0.5
+                };
+            }
+        }
+
+        HtmlEmbedBlot.blotName = 'html-embed';
+        HtmlEmbedBlot.tagName = 'div';
+        HtmlEmbedBlot.className = 'html-embed-container';
+
+        Quill.register(HtmlEmbedBlot);
+
+        // ========== Page Break Blot ==========
+        class PageBreakBlot extends BlockEmbed { }
+        PageBreakBlot.blotName = 'pagebreak';
+        PageBreakBlot.tagName = 'hr';
+        PageBreakBlot.className = 'page-break';
+        Quill.register(PageBreakBlot);
+
+        // ========== Initialize Quill ==========
+        var quill = new Quill('#editor-container', {
+            modules: {
+                toolbar: {
+                    container: '#toolbar-container',
+                    handlers: {
+                        'pagebreak': function () {
+                            const range = quill.getSelection();
+                            if (range) {
+                                quill.insertEmbed(range.index, 'pagebreak', true, 'user');
+                                quill.setSelection(range.index + 1, Quill.sources.SILENT);
+                            }
+                        }
+                    }
+                }
+            },
+            theme: 'snow'
+        });
+
+        // Mosaic Integration
+        window.Mosaic.onDataLoaded = (data) => {
+            if (data.content) {
+                if (JSON.stringify(quill.getContents()) !== JSON.stringify(data.content)) {
+                    quill.setContents(data.content);
+                }
+                window.Mosaic.send({ type: 'html', value: quill.root.innerHTML });
+            }
+        };
+
+        // Auto-save
+        quill.on('text-change', function (delta, oldDelta, source) {
+            if (source === 'user') {
+                const content = quill.getContents();
+                window.Mosaic.saveData({ content });
+                window.Mosaic.send({ type: 'html', value: quill.root.innerHTML });
+            }
+        });
+
+        // Track connected sources: sourceId -> { embed element reference }
+        const connectedSources = new Map();
+
+        // Handle incoming data from connected nodes
+        window.Mosaic.on('input', (data, sourceId) => {
+            console.log('[DocEditor] Received input:', data, 'from', sourceId);
+
+            if (!data || !data.type) return;
+
+            // SDP Compatibility: Unpack
+            const value = data.payload ? data.payload.value : data.value;
+            const type = data.type;
+            const sourceTitle = (data.payload ? data.payload.sourceTitle : null) || data.sourceTitle;
+
+            if (type === 'html') {
+                // Find existing embed from this source
+                const existingEmbed = document.querySelector(`.html-embed-container[data-source-id="${sourceId}"]`);
+
+                if (existingEmbed) {
+                    // Update existing embed's iframe and header
+                    const iframe = existingEmbed.querySelector('iframe');
+                    if (iframe) {
+                        iframe.srcdoc = value;
+                        existingEmbed.dataset.html = value;
+                    }
+                    // Update header with latest title
+                    const header = existingEmbed.querySelector('.embed-header');
+                    if (header && sourceTitle) {
+                        header.textContent = '📎 ' + sourceTitle;
+                        existingEmbed.dataset.sourceTitle = sourceTitle;
+                    }
+                } else {
+                    // Insert new HTML embed at end
+                    const length = quill.getLength();
+                    quill.insertEmbed(length - 1, 'html-embed', {
+                        html: value,
+                        sourceId: sourceId,
+                        sourceTitle: sourceTitle || 'Connected Content'
+                    }, 'api');
+                }
+
+                // Track source
+                if (sourceId) {
+                    connectedSources.set(sourceId, true);
+                }
+            }
+            else if (type === 'text') {
+                // Text: always append (accumulative)
+                const length = quill.getLength();
+                quill.insertText(length - 1, value + '\n', 'api');
+            }
+            else if (type === 'image' && value) {
+                // Image: REPLACE if same source, otherwise insert
+                // Find existing image from this source
+                const existingImg = document.querySelector(`img[data-source-id="${sourceId}"]`);
+
+                if (existingImg) {
+                    // Update existing image in place
+                    existingImg.src = value;
+                    console.log('[DocEditor] Replaced existing image from source:', sourceId);
+                } else {
+                    // Insert new image and mark with sourceId
+                    const length = quill.getLength();
+                    quill.insertEmbed(length - 1, 'image', value, 'api');
+
+                    // Mark the newly inserted image with sourceId for future updates
+                    setTimeout(() => {
+                        const imgs = document.querySelectorAll('#editor-container img:not([data-source-id])');
+                        if (imgs.length > 0) {
+                            const newImg = imgs[imgs.length - 1];
+                            newImg.dataset.sourceId = sourceId;
+                            console.log('[DocEditor] Inserted new image from source:', sourceId);
+                        }
+                    }, 50);
+                }
+            }
+            else if (type === 'color') {
+                const range = quill.getSelection();
+                if (range && range.length > 0) {
+                    quill.formatText(range.index, range.length, 'color', value, 'api');
+                }
+            }
+            else if (type === 'url' && value) {
+                // URL type - embed the website in an iframe
+                const existingEmbed = document.querySelector(`.html-embed-container[data-source-id="${sourceId}"]`);
+
+                if (existingEmbed) {
+                    // Update existing embed's iframe src
+                    const iframe = existingEmbed.querySelector('iframe');
+                    if (iframe) {
+                        iframe.src = value;
+                        existingEmbed.dataset.html = value;
+                    }
+                } else {
+                    // Create HTML that embeds the URL
+                    const embedHtml = `<iframe src="${value}" style="width:100%;height:100%;border:none;"></iframe>`;
+                    const length = quill.getLength();
+                    quill.insertEmbed(length - 1, 'html-embed', {
+                        html: embedHtml,
+                        sourceId: sourceId,
+                        sourceTitle: sourceTitle || 'Web Page'
+                    }, 'api');
+                }
+
+                if (sourceId) {
+                    connectedSources.set(sourceId, true);
+                }
+            }
+
+            // Save updated content
+            const content = quill.getContents();
+            window.Mosaic.saveData({ content });
+            window.Mosaic.send({ type: 'html', value: quill.root.innerHTML });
+        });
+
+        // Handle disconnection
+        window.Mosaic.on('disconnect', (sourceId) => {
+            console.log('[DocEditor] Disconnected from:', sourceId);
+
+            // Remove embed from this source
+            const existingEmbed = document.querySelector(`.html-embed-container[data-source-id="${sourceId}"]`);
+            if (existingEmbed) {
+                existingEmbed.remove();
+            }
+
+            if (sourceId) {
+                connectedSources.delete(sourceId);
+            }
+
+            // Save after removal
+            const content = quill.getContents();
+            window.Mosaic.saveData({ content });
+        });
+    </script>
+</body>
+
+</html>

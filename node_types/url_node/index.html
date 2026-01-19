@@ -1,0 +1,3534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #ddd;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            box-sizing: border-box;
+            /* Ensure padding doesn't overflow */
+        }
+
+        #toolbar {
+            height: 38px;
+            background: #252525;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+        }
+
+        #url-input {
+            flex: 1;
+            background: #333;
+            border: 1px solid #444;
+            color: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        #url-input:focus {
+            border-color: #555;
+            background: #3a3a3a;
+        }
+
+        button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.2s;
+            opacity: 1;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        button:hover:not(:disabled) {
+            background: #555;
+        }
+
+        button.primary {
+            background: #007bff;
+        }
+
+        button.primary:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        button.inspect {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        button.inspect:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        #container {
+            flex: 1;
+            position: relative;
+            background: white;
+            overflow: hidden;
+        }
+
+        /* Webview Styling */
+        webview {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            display: flex;
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #555;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #info-bar {
+            height: 28px;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 11px;
+            color: #888;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        #info-bar .status {
+            color: #4fc3f7;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========== DATA PANELS ========== */
+        #main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-panel {
+            width: 200px;
+            min-width: 120px;
+            max-width: 300px;
+            background: #252525;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.2s, min-width 0.2s;
+            overflow: hidden;
+        }
+
+        .data-panel.collapsed {
+            width: 32px !important;
+            min-width: 32px !important;
+        }
+
+        .data-panel.collapsed .panel-content,
+        .data-panel.collapsed .panel-title span {
+            display: none;
+        }
+
+        .data-panel.left {
+            border-right: 1px solid #444;
+        }
+
+        .data-panel.right {
+            border-left: 1px solid #444;
+        }
+
+        .panel-header {
+            height: 32px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-title i {
+            color: #666;
+        }
+
+        .panel-toggle {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 10px;
+        }
+
+        .panel-toggle:hover {
+            color: #aaa;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .panel-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 3px;
+        }
+
+        /* Data Cards */
+        .data-card {
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.15s;
+        }
+
+        .data-card:hover {
+            border-color: #555;
+            background: #252525;
+        }
+
+        .data-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .data-card-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .data-card-type {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #333;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .data-card-type.text {
+            background: #2d4a3e;
+            color: #6dca89;
+        }
+
+        .data-card-type.image {
+            background: #4a3d2d;
+            color: #caa86d;
+        }
+
+        .data-card-type.svg {
+            background: #3d2d4a;
+            color: #a86dca;
+        }
+
+        .data-card-type.url {
+            background: #2d3d4a;
+            color: #6da8ca;
+        }
+
+        .data-card-preview {
+            font-size: 12px;
+            color: #aaa;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+        }
+
+        .data-card-preview img {
+            max-width: 100%;
+            max-height: 50px;
+            border-radius: 3px;
+        }
+
+        .data-card-source {
+            font-size: 10px;
+            color: #555;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .data-card-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .data-card-actions button {
+            font-size: 10px;
+            padding: 3px 6px;
+            background: #333;
+        }
+
+        .panel-empty {
+            text-align: center;
+            color: #555;
+            font-size: 11px;
+            padding: 20px 10px;
+        }
+
+        .panel-empty i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Webview Container */
+        #webview-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar">
+        <button id="back-btn" title="Back" disabled><i class="fas fa-arrow-left"></i></button>
+        <button id="forward-btn" title="Forward" disabled><i class="fas fa-arrow-right"></i></button>
+        <button id="reload-btn" title="Reload"><i class="fas fa-sync-alt"></i></button>
+
+        <input type="text" id="url-input" placeholder="https://example.com" />
+        <button id="go-btn" class="primary" title="Go">Go</button>
+
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 4px;"></div>
+
+        <button id="inspect-btn" class="inspect" title="Select Element (Click)">
+            <i class="fas fa-mouse-pointer"></i> Select
+        </button>
+        <button id="crop-btn" class="inspect" title="Select Region (Drag)">
+            <i class="fas fa-crop-alt"></i> Region
+        </button>
+
+
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 4px;"></div>
+
+        <button id="eject-btn" title="Eject Data to External App (e.g. Google Docs)">
+            <i class="fas fa-external-link-alt"></i> Eject
+        </button>
+
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 4px;"></div>
+
+        <button id="watch-btn" title="Watch element for changes">
+            <i class="fas fa-eye"></i> Watch
+        </button>
+        <select id="interval-select"
+            style="background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 4px; font-size: 11px;">
+            <option value="30000">30s</option>
+            <option value="60000" selected>1m</option>
+            <option value="300000">5m</option>
+            <option value="900000">15m</option>
+            <option value="1800000">30m</option>
+            <option value="3600000">1h</option>
+        </select>
+    </div>
+
+    <div id="main-content">
+        <!-- Webview Container (Full width - I/O panels moved to global Focus Mode) -->
+        <div id="webview-container">
+            <div id="empty-state" class="empty-state">
+                <i class="fas fa-globe" style="font-size: 32px; margin-bottom: 10px;"></i>
+                <p>Enter a URL to browse</p>
+            </div>
+            <!--
+                Webview Configuration:
+                - allowpopups: Enables opening new windows/tabs
+                - useragent: Spoofs latest Chrome 146
+                - plugins: Enables Widevine DRM plugin loading
+                - partition: Uses persistent session for DRM license storage
+                - webpreferences: Additional security and DRM settings
+            -->
+            <webview id="web-frame" allowpopups plugins partition="persist:webview"
+                webpreferences="plugins=true, contextIsolation=false"
+                useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+                src="about:blank">
+                <!--
+                    Note: Preload attribute is set dynamically in initUrlNode to ensure correct path resolution
+                    if the relative path in HTML fails.
+                -->
+            </webview>
+        </div>
+    </div>
+
+    <div id="info-bar">
+        <span class="status" id="status-text">Ready</span>
+    </div>
+
+    <!-- SDK -->
+    <script src="../../js/SDP.js"></script>
+    <script src="../../js/MosaicNode.js"></script>
+    <script src="../../js/Logger.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // ========== FALLBACK STUBS ==========
+        // When loaded via node-loader.js, external scripts may not be loaded yet.
+        // Provide fallback implementations.
+
+        // Logger Fallback
+        if (typeof Logger === 'undefined') {
+            window.Logger = class Logger {
+                constructor(name) { this.name = name; }
+                info(...args) { console.log(`[${this.name}]`, ...args); }
+                warn(...args) { console.warn(`[${this.name}]`, ...args); }
+                error(...args) { console.error(`[${this.name}]`, ...args); }
+            };
+        }
+
+        // SDP Fallback
+        if (typeof SDP === 'undefined' || !window.SDP) {
+            const MosaicTypes = {
+                TEXT: 'text', IMAGE: 'image', SVG: 'svg', URL: 'url', JSON: 'json', HTML: 'html', UNKNOWN: 'unknown'
+            };
+
+            class MosaicData {
+                constructor(type, payload, metadata = {}) {
+                    this.id = crypto.randomUUID();
+                    this.type = type || MosaicTypes.UNKNOWN;
+                    this.payload = payload;
+                    this.metadata = { timestamp: Date.now(), source: 'System', ...metadata };
+                }
+                static validate(obj) {
+                    return obj && typeof obj === 'object' && typeof obj.type === 'string' && obj.payload !== undefined;
+                }
+                static wrap(raw, typeHint = MosaicTypes.UNKNOWN) {
+                    if (MosaicData.validate(raw)) return raw;
+                    let type = typeHint;
+                    if (type === MosaicTypes.UNKNOWN) {
+                        if (typeof raw === 'string') type = MosaicTypes.TEXT;
+                        else if (typeof raw === 'object') type = MosaicTypes.JSON;
+                    }
+                    return new MosaicData(type, raw);
+                }
+            }
+
+            window.SDP = { MosaicData, MosaicTypes };
+        }
+
+        // Use Logger
+        const logger = new Logger('UrlNode');
+
+        // Export init function for Shadow DOM Loader
+        window.initUrlNode = function (scope, mosaicInstance) {
+            console.log('[UrlNode] initUrlNode called!'); // DEBUG
+            logger.info('initUrlNode called with scope:', scope);
+
+            // Scope is the ShadowRoot
+            // MosaicInstance is the scoped MosaicNode instance
+
+            const document = scope; // Shadow DOM root acting as document
+            const nodeContext = { Mosaic: mosaicInstance }; // Local shim renamed to avoid shadowing global window
+
+            const urlInput = document.getElementById('url-input');
+            const webview = document.getElementById('web-frame');
+            const goBtn = document.getElementById('go-btn');
+
+            console.log('[UrlNode] Elements:', { urlInput, webview, goBtn }); // DEBUG
+
+            logger.info('Elements found:', {
+                urlInput: !!urlInput,
+                webview: !!webview,
+                goBtn: !!goBtn
+            });
+
+            // ========== CRITICAL: Preload Path for Electron Webview ==========
+            // Electron requires an ABSOLUTE file:// path for the preload script.
+            // We construct it from the app's location.
+            // In Electron, __dirname is available in the main process.
+            // In renderer (this context), we need to derive it from window.location or use a known base.
+
+            // SIMPLIFIED & ROBUST PATH CALCULATION
+            // SIMPLIFIED & ROBUST PATH CALCULATION
+            // window.location.pathname is the APP ROOT (e.g. /.../Mosaic/index.html)
+            // So we need to append the known structure to reach the node type
+            const currentPath = window.location.pathname;
+            const appRoot = currentPath.substring(0, currentPath.lastIndexOf('/'));
+            const preloadPath = `file://${appRoot}/node_types/url_node/webview-preload.js`;
+
+            console.log('[UrlNode] Calculated preload path:', preloadPath);
+
+            // DEBUG: Show path on screen to verify
+            /*
+            const debugEl = document.createElement('div');
+            debugEl.style.cssText = 'position:absolute; top:40px; left:0; right:0; background:rgba(255,0,0,0.8); color:white; font-size:10px; z-index:9999; padding:5px; pointer-events:none; word-break:break-all;';
+            debugEl.textContent = 'Preload: ' + preloadPath;
+            document.body.appendChild(debugEl);
+            setTimeout(() => { debugEl.style.display = 'none'; }, 10000);
+            */
+
+            webview.preload = preloadPath;
+
+            // Also ensure webview has required attributes for IPC
+            webview.setAttribute('nodeintegration', 'false');
+            webview.setAttribute('nodeintegrationinsubframes', 'false');
+            webview.setAttribute('webpreferences', 'contextIsolation=no');
+
+            logger.info('Preload configured:', preloadPath);
+
+            const backBtn = document.getElementById('back-btn');
+            const forwardBtn = document.getElementById('forward-btn');
+            const reloadBtn = document.getElementById('reload-btn');
+
+            const inspectBtn = document.getElementById('inspect-btn');
+            const cropBtn = document.getElementById('crop-btn');
+
+            const watchBtn = document.getElementById('watch-btn');
+            const ejectBtn = document.getElementById('eject-btn');
+            const intervalSelect = document.getElementById('interval-select');
+            const emptyState = document.getElementById('empty-state');
+            const statusText = document.getElementById('status-text');
+
+            let currentUrl = '';
+            let selectedSelector = null;
+            let isWatching = false;
+            let isModeActive = false;
+
+            // ========== Helper: Update UI State ==========
+            function updateNavButtons() {
+                if (webview.canGoBack()) {
+                    backBtn.disabled = false;
+                } else {
+                    backBtn.disabled = true;
+                }
+
+                if (webview.canGoForward()) {
+                    forwardBtn.disabled = false;
+                } else {
+                    forwardBtn.disabled = true;
+                }
+            }
+
+            // ========== Helper: Load URL Safe ==========
+            function loadUrl(url) {
+                console.log('[UrlNode] loadUrl called with:', url); // DEBUG
+                if (!url) return;
+
+                // Ensure protocol
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file://')) {
+                    url = 'https://' + url;
+                }
+
+                // Don't reload if same URL (unless it's about:blank or we want to force)
+                if (currentUrl === url && webview.getURL() === url) {
+                    console.log('[UrlNode] URL already loaded:', url);
+                    return;
+                }
+
+                currentUrl = url;
+                urlInput.value = url;
+
+                logger.info('Loading URL:', url);
+                console.log('[UrlNode] Setting webview source to:', url);
+
+                // Set source using loadURL for better reliability
+                try {
+                    // Check if methods are available (sometimes webview isn't fully ready immediately)
+                    if (webview.loadURL) {
+                        console.log('[UrlNode] Using webview.loadURL');
+                        webview.loadURL(url);
+                    } else {
+                        console.log('[UrlNode] Fallback to webview.src');
+                        webview.src = url;
+                    }
+                } catch (err) {
+                    console.error('[UrlNode] Failed to load URL:', err);
+                    logger.error('Failed to load URL:', err);
+                    statusText.textContent = 'Error: ' + err.message;
+                }
+
+                emptyState.style.display = 'none';
+                statusText.textContent = 'Loading...';
+            }
+
+            // ========== Webview Events ==========
+
+            // 0. DOM Ready - Set up webContents handlers for new window interception
+            webview.addEventListener('dom-ready', () => {
+                console.log('[UrlNode] DOM Ready - setting up webContents handlers');
+
+                // Try to access webContents for modern Electron popup handling
+                // Note: getWebContents() requires remote module which may not be available
+                // Instead, we rely on main process interception via web-contents-created
+
+                // Log webview info for debugging
+                console.log('[UrlNode] Webview ready:', {
+                    url: webview.getURL(),
+                    webContentsId: webview.getWebContentsId ? webview.getWebContentsId() : 'N/A',
+                    allowpopups: webview.hasAttribute('allowpopups'),
+                    preload: webview.preload
+                });
+
+                // Verify preload script is loaded by checking for IPC availability
+                webview.executeJavaScript('typeof ipcRenderer !== "undefined"')
+                    .then(hasIpc => {
+                        console.log('[UrlNode] Preload IPC available:', hasIpc);
+                        if (!hasIpc) {
+                            console.log('[UrlNode] Preload not loaded, injecting context menu handler...');
+                            injectContextMenuHandler();
+                        }
+                    })
+                    .catch(err => {
+                        console.error('[UrlNode] Could not verify preload:', err);
+                        // Try injecting anyway
+                        injectContextMenuHandler();
+                    });
+
+                // The main process should handle new windows via setWindowOpenHandler
+                // This is logged here to confirm dom-ready fired
+            });
+
+            // ========== FALLBACK: Inject Context Menu Handler via executeJavaScript ==========
+            function injectContextMenuHandler() {
+                const contextMenuScript = `
+                    (function() {
+                        if (window.__mosaicContextMenuInjected) return;
+                        window.__mosaicContextMenuInjected = true;
+                        
+                        console.log('[Mosaic Injected] Context menu handler attaching...');
+                        
+                        // Helper function to convert image to dataURL via canvas
+                        async function imageToDataURL(img) {
+                            return new Promise((resolve, reject) => {
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = img.naturalWidth || img.width || 200;
+                                    canvas.height = img.naturalHeight || img.height || 200;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0);
+                                    const dataUrl = canvas.toDataURL('image/png');
+                                    resolve(dataUrl);
+                                } catch (err) {
+                                    reject(err);
+                                }
+                            });
+                        }
+                        
+                        document.addEventListener('contextmenu', async function(e) {
+                            console.log('[Mosaic Injected] Context menu on:', e.target.tagName);
+                            
+                            const target = e.target;
+                            let contextData = null;
+                            
+                            if (target.tagName === 'IMG') {
+                                try {
+                                    const dataUrl = await imageToDataURL(target);
+                                    contextData = {
+                                        type: 'image',
+                                        value: target.src,
+                                        dataUrl: dataUrl,
+                                        width: target.naturalWidth,
+                                        height: target.naturalHeight
+                                    };
+                                } catch (err) {
+                                    // CORS blocked
+                                    contextData = {
+                                        type: 'image',
+                                        value: target.src,
+                                        width: target.naturalWidth,
+                                        height: target.naturalHeight
+                                    };
+                                }
+                            } else if (target.tagName === 'SVG' || target.closest('svg')) {
+                                const svg = target.tagName === 'SVG' ? target : target.closest('svg');
+                                contextData = {
+                                    type: 'svg',
+                                    value: svg.outerHTML,
+                                    width: svg.getBoundingClientRect().width,
+                                    height: svg.getBoundingClientRect().height
+                                };
+                            } else if (target.tagName === 'A') {
+                                contextData = {
+                                    type: 'url',
+                                    value: target.href,
+                                    text: target.textContent.trim()
+                                };
+                            } else {
+                                const selection = window.getSelection();
+                                if (selection && selection.toString().trim()) {
+                                    contextData = {
+                                        type: 'text',
+                                        value: selection.toString().trim()
+                                    };
+                                }
+                            }
+                            
+                            // ALWAYS prevent default and store data (even if no element)
+                            e.preventDefault();
+                            window.__mosaicContextData = {
+                                x: e.clientX,
+                                y: e.clientY,
+                                data: contextData, // Can be null for "no element"
+                                pageUrl: window.location.href,
+                                timestamp: Date.now()
+                            };
+                            console.log('[Mosaic Injected] Context data stored:', contextData ? contextData.type : 'none');
+                        }, true);
+                        
+                        // Click listener to close context menu when clicking inside webview
+                        document.addEventListener('click', function(e) {
+                            // Set flag to indicate click happened inside webview
+                            window.__mosaicWebviewClicked = Date.now();
+                        }, true);
+                        
+                        console.log('[Mosaic Injected] Context menu handler ready!');
+                    })();
+                `;
+
+                webview.executeJavaScript(contextMenuScript)
+                    .then(() => console.log('[UrlNode] Context menu handler injected successfully'))
+                    .catch(err => console.error('[UrlNode] Failed to inject context menu:', err));
+            }
+
+            // Poll for context menu data and show menu
+            let contextMenuPollInterval = null;
+
+            function startContextMenuPolling() {
+                if (contextMenuPollInterval) return;
+
+                contextMenuPollInterval = setInterval(() => {
+                    // Safety check: Stop polling if webview is detached
+                    if (!webview.isConnected) {
+                        clearInterval(contextMenuPollInterval);
+                        contextMenuPollInterval = null;
+                        return;
+                    }
+
+                    // Check for context menu request
+                    webview.executeJavaScript('window.__mosaicContextData')
+                        .then(data => {
+                            if (data && data.timestamp) {
+                                // Check if this is new data (within last 500ms)
+                                const age = Date.now() - data.timestamp;
+                                if (age < 500) {
+                                    // Clear data to prevent re-showing
+                                    webview.executeJavaScript('window.__mosaicContextData = null');
+                                    showContextMenu(data.x, data.y, data.data, data.pageUrl);
+                                }
+                            }
+                        })
+                        .catch(() => { }); // Ignore errors during polling
+
+                    // Check for webview click (to close menu)
+                    webview.executeJavaScript('window.__mosaicWebviewClicked')
+                        .then(clickTime => {
+                            if (clickTime && currentContextMenu) {
+                                const age = Date.now() - clickTime;
+                                if (age < 300) {
+                                    // Recent click - close menu
+                                    webview.executeJavaScript('window.__mosaicWebviewClicked = null');
+                                    if (currentContextMenu && currentContextMenu.parentNode) {
+                                        currentContextMenu.remove();
+                                        currentContextMenu = null;
+                                    }
+                                }
+                            }
+                        })
+                        .catch(() => { });
+                }, 100);
+            }
+
+            // Start polling after webview is ready
+            webview.addEventListener('did-finish-load', () => {
+                startContextMenuPolling();
+            });
+
+            // 1. Start Loading
+            webview.addEventListener('did-start-loading', () => {
+                statusText.textContent = 'Loading...';
+                reloadBtn.querySelector('i').classList.add('fa-spin');
+            });
+
+            // 2. Stop Loading
+            webview.addEventListener('did-stop-loading', () => {
+                statusText.textContent = 'Ready';
+                reloadBtn.querySelector('i').classList.remove('fa-spin');
+                updateNavButtons();
+
+                // Update URL input to match actual loaded URL
+                const actualUrl = webview.getURL();
+                if (actualUrl && !actualUrl.startsWith('about:') && !actualUrl.startsWith('data:')) {
+                    currentUrl = actualUrl;
+                    urlInput.value = currentUrl;
+
+                    // Persist State immediately
+                    nodeContext.Mosaic.saveData({ content: currentUrl });
+                }
+            });
+
+            // 3. Navigation (History Update)
+            webview.addEventListener('did-navigate', (e) => {
+                logger.info('[Webview] Did navigate:', e.url);
+                updateNavButtons();
+
+                if (e.url && !e.url.startsWith('about:')) {
+                    currentUrl = e.url;
+                    urlInput.value = currentUrl;
+                    nodeContext.Mosaic.saveData({ content: currentUrl });
+                }
+            });
+
+            // 4. In-Page Navigation
+            webview.addEventListener('did-navigate-in-page', (e) => {
+                updateNavButtons();
+                if (e.url && !e.url.startsWith('about:')) {
+                    currentUrl = e.url;
+                    urlInput.value = currentUrl;
+                    nodeContext.Mosaic.saveData({ content: currentUrl });
+                }
+            });
+
+            // 5. IPC Message Handler (The Bridge)
+            webview.addEventListener('ipc-message', (event) => {
+                const channel = event.channel;
+                const data = event.args[0];
+
+                logger.info('IPC Message:', channel, data);
+
+                if (channel === 'element-selected' || channel === 'region-selected') {
+                    handleDataReceived(data);
+                    resetModeUI();
+                }
+                else if (channel === 'inspection-cancelled') {
+                    resetModeUI();
+                }
+                else if (channel === 'element-hover') {
+                    // Optional: Show tooltip or info in status bar
+                    // statusText.textContent = `Hover: ${data.tagName} ${data.selector}`;
+                }
+                // ========== CONTEXT MENU INTEGRATION ==========
+                else if (channel === 'context-menu-request') {
+                    // Show context menu with option to add to Outgoing panel
+                    showContextMenu(data.x, data.y, data.data, data.pageUrl);
+                }
+                // ========== PASTE CONTENT INTEGRATION ==========
+                else if (channel === 'paste-content') {
+                    // Add pasted content to Outgoing panel
+                    addToOutgoingPanel(data);
+                    statusText.textContent = `Content captured: ${data.type}`;
+                    setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                }
+                // ========== ZOOM FROM WEBVIEW GESTURE ==========
+                else if (channel === 'webview-zoom') {
+                    const ZOOM_STEP = 0.1;
+                    if (data.direction === 'in') {
+                        setZoom(currentZoom + ZOOM_STEP);
+                    } else if (data.direction === 'out') {
+                        setZoom(currentZoom - ZOOM_STEP);
+                    } else if (data.direction === 'reset') {
+                        setZoom(1.0);
+                    }
+                }
+                // ========== SWIPE NAVIGATION FROM WEBVIEW ==========
+                else if (channel === 'webview-swipe') {
+                    if (data.direction === 'back' && webview.canGoBack()) {
+                        webview.goBack();
+                        statusText.textContent = '← Back';
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 500);
+                    } else if (data.direction === 'forward' && webview.canGoForward()) {
+                        webview.goForward();
+                        statusText.textContent = 'Forward →';
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 500);
+                    }
+                }
+            });
+
+            // ========== CONTEXT MENU UI ==========
+            let currentContextMenu = null;
+            let currentCloseHandler = null;
+
+            function showContextMenu(x, y, contentData, pageUrl) {
+                // Use top-level document (escape Shadow DOM)
+                const topDocument = window.top.document || document;
+                const topBody = topDocument.body;
+
+                // Remove ALL existing context menus (including from other nodes)
+                topDocument.querySelectorAll('.url-node-context-menu').forEach(menu => menu.remove());
+                currentContextMenu = null;
+
+                // Remove previous close handlers
+                if (currentCloseHandler) {
+                    topDocument.removeEventListener('click', currentCloseHandler, true);
+                    topDocument.removeEventListener('mousedown', currentCloseHandler, true);
+                    topDocument.removeEventListener('contextmenu', currentCloseHandler, true);
+                    currentCloseHandler = null;
+                }
+
+                // Get webview position to calculate screen coordinates
+                const webviewRect = webview.getBoundingClientRect();
+                const screenX = webviewRect.left + x;
+                const screenY = webviewRect.top + y;
+
+                // Create context menu
+                const menu = topDocument.createElement('div');
+                menu.className = 'url-node-context-menu';
+                menu.style.cssText = `
+                    position: fixed;
+                    left: ${screenX}px;
+                    top: ${screenY}px;
+                    background: rgba(30, 30, 30, 0.98);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 8px;
+                    padding: 6px 0;
+                    min-width: 200px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                    z-index: 100000;
+                    font-size: 13px;
+                    color: #fff;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                `;
+
+                // Check if we have element data
+                const hasElement = contentData && contentData.type;
+                const canGoBack = webview.canGoBack();
+                const canGoForward = webview.canGoForward();
+
+                // Get outgoing cards for replace submenu
+                const nodeId = nodeContext?.Mosaic?.id || scope.getRootNode()?.host?.id;
+                const outgoingPackets = window.dataCardStore ? window.dataCardStore.getOutgoingPackets(nodeId) : [];
+                const hasOutgoingCards = outgoingPackets.length > 0;
+
+                // Menu items - navigation always available, element options depend on content
+                const items = [
+                    // Element actions (disabled if no element)
+                    { icon: 'fa-share-square', label: 'Add to Outgoing', action: 'outgoing', disabled: !hasElement },
+                    { icon: 'fa-copy', label: 'Copy', action: 'copy', disabled: !hasElement },
+                    // Replace submenu (disabled if no element OR no outgoing cards)
+                    { icon: 'fa-exchange-alt', label: 'Replace Card', action: 'replace', disabled: !hasElement || !hasOutgoingCards, hasSubmenu: true, submenuItems: outgoingPackets },
+                    { separator: true },
+                    // Navigation actions (always available)
+                    { icon: 'fa-arrow-left', label: 'Back', action: 'back', disabled: !canGoBack },
+                    { icon: 'fa-arrow-right', label: 'Forward', action: 'forward', disabled: !canGoForward },
+                    { icon: 'fa-sync-alt', label: 'Reload', action: 'reload' },
+                    { separator: true },
+                    { icon: 'fa-code', label: 'Inspect Element', action: 'inspect' },
+                    // Info row (shows element type if available)
+                    hasElement ? { icon: 'fa-info-circle', label: contentData.type.toUpperCase(), disabled: true } : null
+                ].filter(Boolean);
+
+                items.forEach(item => {
+                    if (item.separator) {
+                        const sep = topDocument.createElement('div');
+                        sep.style.cssText = 'height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;';
+                        menu.appendChild(sep);
+                        return;
+                    }
+
+                    const menuItem = topDocument.createElement('div');
+                    menuItem.style.cssText = `
+                        padding: 8px 14px;
+                        cursor: ${item.disabled ? 'default' : 'pointer'};
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        opacity: ${item.disabled ? '0.4' : '1'};
+                        transition: background 0.15s;
+                        position: relative;
+                    `;
+
+                    // Add arrow for submenu items
+                    const arrowHtml = item.hasSubmenu && !item.disabled ? '<i class="fas fa-chevron-right" style="margin-left: auto; font-size: 10px;"></i>' : '';
+                    menuItem.innerHTML = `<i class="fas ${item.icon}" style="width: 16px; text-align: center;"></i> ${item.label}${arrowHtml}`;
+
+                    if (!item.disabled) {
+                        menuItem.addEventListener('mouseenter', () => {
+                            menuItem.style.background = 'rgba(255,255,255,0.1)';
+
+                            // Show submenu if this item has one
+                            if (item.hasSubmenu && item.submenuItems && item.submenuItems.length > 0) {
+                                showSubmenu(menuItem, item.submenuItems, contentData);
+                            }
+                        });
+                        menuItem.addEventListener('mouseleave', (e) => {
+                            // Don't hide if moving to submenu
+                            const submenu = topDocument.querySelector('.url-node-context-submenu');
+                            if (submenu && submenu.contains(e.relatedTarget)) return;
+
+                            menuItem.style.background = 'transparent';
+                        });
+
+                        // Only add click for non-submenu items
+                        if (!item.hasSubmenu) {
+                            menuItem.addEventListener('click', () => {
+                                // Element actions
+                                if (item.action === 'outgoing' && hasElement) {
+                                    addToOutgoingPanel(contentData);
+                                    statusText.textContent = `Added ${contentData.type} to Outgoing`;
+                                    setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                                } else if (item.action === 'copy' && hasElement) {
+                                    copyToClipboard(contentData);
+                                    statusText.textContent = 'Copied to clipboard';
+                                    setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                                }
+                                // Navigation actions
+                                else if (item.action === 'back') {
+                                    webview.goBack();
+                                } else if (item.action === 'forward') {
+                                    webview.goForward();
+                                } else if (item.action === 'reload') {
+                                    webview.reload();
+                                } else if (item.action === 'inspect') {
+                                    webview.openDevTools();
+                                }
+
+                                closeContextMenu();
+                            });
+                        }
+                    }
+
+                    menu.appendChild(menuItem);
+                });
+
+                // Submenu helper function
+                function showSubmenu(parentItem, packets, newContentData) {
+                    // Remove existing submenu
+                    topDocument.querySelectorAll('.url-node-context-submenu').forEach(s => s.remove());
+
+                    const submenu = topDocument.createElement('div');
+                    submenu.className = 'url-node-context-submenu';
+
+                    const parentRect = parentItem.getBoundingClientRect();
+                    submenu.style.cssText = `
+                        position: fixed;
+                        left: ${parentRect.right - 5}px;
+                        top: ${parentRect.top}px;
+                        background: rgba(30, 30, 30, 0.98);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 8px;
+                        padding: 6px 0;
+                        min-width: 180px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                        z-index: 100001;
+                        font-size: 13px;
+                        color: #fff;
+                    `;
+
+                    packets.forEach(packet => {
+                        const subItem = topDocument.createElement('div');
+                        subItem.style.cssText = `
+                            padding: 8px 14px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            transition: background 0.15s;
+                        `;
+
+                        const typeIcon = packet.type === 'image' ? 'fa-image' :
+                            packet.type === 'text' ? 'fa-font' :
+                                packet.type === 'svg' ? 'fa-shapes' : 'fa-file';
+                        subItem.innerHTML = `<i class="fas ${typeIcon}" style="width: 16px;"></i> ${packet.type.toUpperCase()}`;
+
+                        subItem.addEventListener('mouseenter', () => {
+                            subItem.style.background = 'rgba(255,255,255,0.1)';
+                        });
+                        subItem.addEventListener('mouseleave', () => {
+                            subItem.style.background = 'transparent';
+                        });
+                        subItem.addEventListener('click', () => {
+                            // Replace the existing packet with new content
+                            if (window.dataCardStore && newContentData) {
+                                // Update/Replace the packet data
+                                if (window.dataCardStore.replacePacket) {
+                                    window.dataCardStore.replacePacket(nodeId, packet.id, {
+                                        type: newContentData.type,
+                                        value: newContentData.value,
+                                        content: newContentData.value,
+                                        dataUrl: newContentData.dataUrl || null,
+                                        width: newContentData.width,
+                                        height: newContentData.height
+                                    });
+                                    statusText.textContent = `Replaced with ${newContentData.type}`;
+                                } else {
+                                    // Fallback if replacePacket not available (shouldn't happen with updated store)
+                                    window.dataCardStore.addPacket(nodeId, {
+                                        type: newContentData.type,
+                                        value: newContentData.value,
+                                        content: newContentData.value,
+                                        dataUrl: newContentData.dataUrl || null,
+                                        width: newContentData.width,
+                                        height: newContentData.height
+                                    }, 'local', { append: true });
+                                    statusText.textContent = `Added ${newContentData.type} (Replace fail)`;
+                                }
+
+                                setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                            }
+                            closeContextMenu();
+                        });
+
+                        submenu.appendChild(subItem);
+                    });
+
+                    submenu.addEventListener('mouseleave', () => {
+                        submenu.remove();
+                    });
+
+                    topBody.appendChild(submenu);
+                }
+
+                // Close menu function
+                function closeContextMenu() {
+                    // Remove submenu first
+                    topDocument.querySelectorAll('.url-node-context-submenu').forEach(s => s.remove());
+
+                    if (menu && menu.parentNode) {
+                        menu.remove();
+                    }
+                    currentContextMenu = null;
+                    topDocument.removeEventListener('click', closeHandler, true);
+                    topDocument.removeEventListener('mousedown', closeHandler, true);
+                    topDocument.removeEventListener('contextmenu', closeOnRightClick, true);
+                }
+
+                // Close on any click outside (including in webview area)
+                const closeHandler = (e) => {
+                    if (!menu.contains(e.target)) {
+                        closeContextMenu();
+                    }
+                };
+
+                // Close on right-click (new context menu)
+                const closeOnRightClick = (e) => {
+                    if (!menu.contains(e.target)) {
+                        closeContextMenu();
+                    }
+                };
+
+                // Save handler reference for cleanup
+                currentCloseHandler = closeHandler;
+
+                // Attach close handlers
+                setTimeout(() => {
+                    topDocument.addEventListener('click', closeHandler, true);
+                    topDocument.addEventListener('mousedown', closeHandler, true);
+                    topDocument.addEventListener('contextmenu', closeOnRightClick, true);
+                }, 50);
+
+                // Add to main document body
+                topBody.appendChild(menu);
+                currentContextMenu = menu;
+
+                // Adjust position if off-screen
+                const rect = menu.getBoundingClientRect();
+                if (rect.right > window.innerWidth) {
+                    menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
+                }
+                if (rect.bottom > window.innerHeight) {
+                    menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
+                }
+
+                console.log('[UrlNode] Context menu shown at:', screenX, screenY, 'hasElement:', hasElement);
+            }
+
+            // ========== ADD TO OUTGOING PANEL ==========
+            function addToOutgoingPanel(contentData) {
+                // Get node ID from context
+                const nodeId = nodeContext?.Mosaic?.id || scope.getRootNode()?.host?.id;
+
+                if (!nodeId) {
+                    console.warn('[UrlNode] Cannot add to outgoing: no node ID');
+                    return;
+                }
+
+                // Add to DataCardStore
+                if (window.dataCardStore) {
+                    window.dataCardStore.addPacket(nodeId, {
+                        type: contentData.type,
+                        value: contentData.value,
+                        content: contentData.value,
+                        dataUrl: contentData.dataUrl || null,
+                        width: contentData.width,
+                        height: contentData.height,
+                        text: contentData.text || null,
+                        html: contentData.html || null
+                    });
+                    console.log('[UrlNode] Added to Outgoing panel:', contentData.type);
+                } else {
+                    console.warn('[UrlNode] DataCardStore not available');
+                }
+            }
+
+            // ========== COPY TO CLIPBOARD ==========
+            async function copyToClipboard(contentData) {
+                try {
+                    // Use Electron IPC through parent window (escapes iframe sandbox)
+                    const parentWindow = window.top || window.parent || window;
+
+                    if (contentData.type === 'image' && contentData.dataUrl) {
+                        if (parentWindow.electronAPI?.writeClipboardImage) {
+                            await parentWindow.electronAPI.writeClipboardImage(contentData.dataUrl);
+                            console.log('[UrlNode] Image copied via Electron IPC');
+                            return;
+                        }
+                    }
+
+                    // Text, SVG, HTML - all as text
+                    const textValue = contentData.value || contentData.text || '';
+                    if (parentWindow.electronAPI?.writeClipboardText) {
+                        await parentWindow.electronAPI.writeClipboardText(textValue);
+                        console.log('[UrlNode] Text copied via Electron IPC:', contentData.type);
+                        return;
+                    }
+
+                    // Fallback warning (web API won't work in iframe)
+                    console.warn('[UrlNode] Electron API not available');
+                } catch (e) {
+                    console.warn('[UrlNode] Clipboard write failed:', e);
+                }
+            }
+
+            // ========== NEW WINDOW / POPUP HANDLING ==========
+            // When a website tries to open a new tab/window, create a new URL node instead
+
+            // Helper function to create a new URL node from a popup
+            function createUrlNodeFromPopup(newUrl) {
+                console.log('[UrlNode] Creating new node for popup URL:', newUrl);
+
+                // Check if we have access to nodeLoader
+                if (window.nodeLoader && typeof window.nodeLoader.createNode === 'function') {
+                    // Get current node position (in canvas coordinates)
+                    const currentNode = scope.getRootNode().host;
+                    let x = 500, y = 200;  // Default position
+                    const nodeWidth = 500;  // Standard node width
+                    const horizontalGap = 100; // Gap between nodes
+
+                    if (currentNode) {
+                        // Get the actual canvas position (not screen position)
+                        const currentX = parseInt(currentNode.style.left) || 0;
+                        const currentY = parseInt(currentNode.style.top) || 0;
+                        const currentWidth = parseInt(currentNode.style.width) || nodeWidth;
+
+                        // Position new node to the right of current node
+                        x = currentX + currentWidth + horizontalGap;
+                        y = currentY; // Same vertical position
+
+                        console.log('[UrlNode] Positioning new node:', {
+                            sourceX: currentX,
+                            sourceWidth: currentWidth,
+                            newX: x,
+                            newY: y
+                        });
+                    }
+
+                    // Create new URL node with the requested URL
+                    let title = 'New Tab';
+                    try {
+                        title = new URL(newUrl).hostname || 'New Tab';
+                    } catch (e) {
+                        title = newUrl.substring(0, 30);
+                    }
+
+                    const newNode = window.nodeLoader.createNode('url_node', x, y, {
+                        content: newUrl,
+                        title: title,
+                        width: 700,  // Better width for web content
+                        height: 550  // Better height for web content
+                    });
+
+                    statusText.textContent = `Opened in new node: ${title}`;
+                    console.log('[UrlNode] Created new node:', newNode?.id);
+
+                    // Create connection from current node to new node
+                    if (newNode && currentNode && window.createConnection) {
+                        console.log('[UrlNode] Creating connection:', currentNode.id, '->', newNode.id);
+                        window.createConnection(currentNode.id, newNode.id);
+                    }
+
+                    // If in focus mode, switch focus to new node
+                    if (newNode && window.actionBar && window.actionBar.currentFocusedNode) {
+                        console.log('[UrlNode] Switching focus to new node');
+
+                        // Exit current focus and enter focus on new node
+                        setTimeout(() => {
+                            if (window.actionBar.exitFocusMode) {
+                                window.actionBar.exitFocusMode();
+                            }
+
+                            // Select and focus the new node
+                            if (window.selectNode) window.selectNode(newNode);
+
+                            setTimeout(() => {
+                                if (window.actionBar.enterFocusMode) {
+                                    window.actionBar.enterFocusMode(newNode);
+                                    window.actionBar.render();
+                                }
+                            }, 100);
+                        }, 50);
+                    }
+
+                    return true;
+                }
+                return false;
+            }
+
+            // Primary handler: new-window event
+            webview.addEventListener('new-window', (e) => {
+                console.log('[UrlNode] NEW-WINDOW EVENT FIRED:', e.url, 'disposition:', e.disposition);
+
+                const newUrl = e.url;
+                if (!newUrl || newUrl === 'about:blank') return;
+
+                // Prevent default behavior
+                e.preventDefault();
+
+                // Create a new URL node
+                if (!createUrlNodeFromPopup(newUrl)) {
+                    // Fallback: Open URL in current webview
+                    console.warn('[UrlNode] Fallback: opening in current view');
+                    loadUrl(newUrl);
+                }
+            });
+
+            // Backup handler: target="_blank" links via will-navigate with window.open detection
+            // Note: This may not catch all cases, but helps with some sites
+            webview.addEventListener('will-navigate', (e) => {
+                // Log for debugging
+                console.log('[UrlNode] will-navigate:', e.url);
+            });
+
+            // Console message handler to detect window.open calls from the page
+            webview.addEventListener('console-message', (e) => {
+                // Check for our popup marker
+                if (e.message.startsWith('MOSAIC_POPUP:')) {
+                    const popupUrl = e.message.substring('MOSAIC_POPUP:'.length);
+                    console.log('[UrlNode] Popup detected via console:', popupUrl);
+                    createUrlNodeFromPopup(popupUrl);
+                }
+            });
+
+            // ========== ZOOM SUPPORT ==========
+            // Zoom levels: Option+Scroll, Trackpad Pinch, Cmd+0 to reset
+            let currentZoom = 1.0;
+            const MIN_ZOOM = 0.25;
+            const MAX_ZOOM = 5.0;
+            const ZOOM_STEP = 0.1;
+
+            function setZoom(zoomLevel) {
+                currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel));
+                webview.setZoomFactor(currentZoom);
+
+                // Show zoom level in status bar briefly
+                const zoomPercent = Math.round(currentZoom * 100);
+                statusText.textContent = `Zoom: ${zoomPercent}%`;
+
+                // Clear zoom status after 1.5 seconds
+                clearTimeout(window._zoomStatusTimeout);
+                window._zoomStatusTimeout = setTimeout(() => {
+                    if (statusText.textContent.startsWith('Zoom:')) {
+                        statusText.textContent = 'Ready';
+                    }
+                }, 1500);
+
+                logger.info('[Zoom] Level set to:', zoomPercent + '%');
+            }
+
+            // Option+Scroll (Alt+Scroll) for zoom - industry standard
+            // Also handle Ctrl+Scroll for macOS trackpad pinch-to-zoom
+            const zoomContainer = document.getElementById('webview-container');
+            zoomContainer.addEventListener('wheel', (e) => {
+                // Alt/Option key + scroll = zoom (Chrome/Figma style)
+                // Ctrl + scroll = pinch gesture on macOS trackpad
+                if (e.altKey || e.ctrlKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // For pinch gesture (ctrlKey), deltaY is inverted
+                    // Pinch out = zoom in (negative deltaY)
+                    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+                    setZoom(currentZoom + delta);
+                }
+            }, { passive: false });
+
+            // Trackpad pinch gesture support via gesturestart/gesturechange
+            // These are Safari/WebKit specific but work in Electron on Mac
+            zoomContainer.addEventListener('gesturestart', (e) => {
+                e.preventDefault();
+            });
+
+            zoomContainer.addEventListener('gesturechange', (e) => {
+                e.preventDefault();
+                // e.scale is the pinch scale factor (1 = no change, >1 = zoom in, <1 = zoom out)
+                const newZoom = currentZoom * e.scale;
+                setZoom(newZoom);
+            });
+
+            zoomContainer.addEventListener('gestureend', (e) => {
+                e.preventDefault();
+            });
+
+            // ========== SWIPE BACK/FORWARD NAVIGATION ==========
+            // Two-finger horizontal swipe for browser history navigation (Safari/Chrome style)
+            let swipeStartX = 0;
+            let swipeStartY = 0;
+            let isSwipeGesture = false;
+            let swipeIndicator = null;
+
+            // Track horizontal scroll/swipe
+            zoomContainer.addEventListener('wheel', (e) => {
+                // Only handle horizontal scroll (two-finger swipe)
+                // On macOS, two-finger horizontal swipe is reported as wheel with deltaX
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 2 && Math.abs(e.deltaX) > 30) {
+                    // This is a horizontal swipe, not a scroll
+                    if (!e.altKey && !e.ctrlKey && !e.metaKey) {
+                        // Show visual indicator
+                        if (!swipeIndicator) {
+                            swipeIndicator = document.createElement('div');
+                            swipeIndicator.style.cssText = `
+                                position: absolute;
+                                top: 50%;
+                                width: 60px;
+                                height: 60px;
+                                border-radius: 50%;
+                                background: rgba(0, 0, 0, 0.7);
+                                color: white;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 24px;
+                                z-index: 1000;
+                                pointer-events: none;
+                                transition: opacity 0.2s, transform 0.2s;
+                            `;
+                            zoomContainer.appendChild(swipeIndicator);
+                        }
+
+                        if (e.deltaX < -50) {
+                            // Swipe right = go back
+                            if (webview.canGoBack()) {
+                                swipeIndicator.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                                swipeIndicator.style.left = '20px';
+                                swipeIndicator.style.right = 'auto';
+                                swipeIndicator.style.opacity = '1';
+
+                                // Debounce navigation
+                                if (!zoomContainer._swipeTimeout) {
+                                    zoomContainer._swipeTimeout = setTimeout(() => {
+                                        webview.goBack();
+                                        statusText.textContent = 'Going back...';
+                                        setTimeout(() => {
+                                            if (swipeIndicator) swipeIndicator.style.opacity = '0';
+                                            statusText.textContent = 'Ready';
+                                        }, 300);
+                                        zoomContainer._swipeTimeout = null;
+                                    }, 100);
+                                }
+                            }
+                        } else if (e.deltaX > 50) {
+                            // Swipe left = go forward
+                            if (webview.canGoForward()) {
+                                swipeIndicator.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                                swipeIndicator.style.right = '20px';
+                                swipeIndicator.style.left = 'auto';
+                                swipeIndicator.style.opacity = '1';
+
+                                // Debounce navigation
+                                if (!zoomContainer._swipeTimeout) {
+                                    zoomContainer._swipeTimeout = setTimeout(() => {
+                                        webview.goForward();
+                                        statusText.textContent = 'Going forward...';
+                                        setTimeout(() => {
+                                            if (swipeIndicator) swipeIndicator.style.opacity = '0';
+                                            statusText.textContent = 'Ready';
+                                        }, 300);
+                                        zoomContainer._swipeTimeout = null;
+                                    }, 100);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, { passive: true });
+
+            // Keyboard shortcuts: Cmd/Ctrl + Plus/Minus/0
+            scope.addEventListener('keydown', (e) => {
+                // Only handle if webview is focused or webview-container is active
+                const isMeta = e.metaKey || e.ctrlKey;
+
+                if (isMeta && (e.key === '=' || e.key === '+')) {
+                    // Zoom in
+                    e.preventDefault();
+                    setZoom(currentZoom + ZOOM_STEP);
+                } else if (isMeta && e.key === '-') {
+                    // Zoom out
+                    e.preventDefault();
+                    setZoom(currentZoom - ZOOM_STEP);
+                } else if (isMeta && e.key === '0') {
+                    // Reset zoom
+                    e.preventDefault();
+                    setZoom(1.0);
+                }
+            });
+
+            // ========== Toolbar Actions ==========
+
+            // Helper to stop propagation for UI elements
+            function stopProp(e) {
+                e.stopPropagation();
+                // e.stopImmediatePropagation(); // Optional: use if needed
+            }
+
+            // Prevent Node Selection when interacting with Toolbar
+            const toolbarElements = [urlInput, goBtn, backBtn, forwardBtn, reloadBtn, inspectBtn, cropBtn, watchBtn, ejectBtn, intervalSelect];
+            toolbarElements.forEach(el => {
+                if (el) {
+                    el.addEventListener('mousedown', stopProp);
+                    el.addEventListener('click', stopProp);
+                    el.addEventListener('keydown', (e) => e.stopPropagation());
+                }
+            });
+
+            goBtn.addEventListener('click', (e) => {
+                stopProp(e);
+                console.log('[UrlNode] Go Button Clicked! Value:', urlInput.value); // DEBUG
+                logger.info('Go button clicked with:', urlInput.value);
+                loadUrl(urlInput.value);
+            });
+
+            urlInput.addEventListener('keydown', (e) => {
+                // Stop bubbling
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                    console.log('[UrlNode] Enter Key! Loading:', urlInput.value);
+                    loadUrl(urlInput.value);
+                }
+            });
+
+            urlInput.addEventListener('keydown', (e) => {
+                // Critical: Stop event from bubbling to Mosaic global listeners (avoids node deletion)
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                logger.info('[UrlNode] Input keydown:', e.key);
+
+                if (e.key === 'Enter') {
+                    logger.info('[UrlNode] Type Enter -> Load URL');
+                    loadUrl(urlInput.value);
+                }
+            });
+            urlInput.addEventListener('keyup', (e) => { e.stopPropagation(); e.stopImmediatePropagation(); });
+            urlInput.addEventListener('keypress', (e) => { e.stopPropagation(); e.stopImmediatePropagation(); });
+
+            reloadBtn.addEventListener('click', () => {
+                if (webview.isLoading()) webview.stop();
+                else webview.reload();
+            });
+
+            backBtn.addEventListener('click', () => webview.canGoBack() && webview.goBack());
+            forwardBtn.addEventListener('click', () => webview.canGoForward() && webview.goForward());
+
+            // ========== INSPECTION & REGION LOGIC (IPC) ==========
+
+            function checkUrl() {
+                const url = webview.getURL();
+                if (!url || url === 'about:blank') {
+                    statusText.textContent = 'Load a URL first';
+                    return false;
+                }
+                return true;
+            }
+
+            // 1. Element Inspector
+            // FIX: Use executeJavaScript instead of webview.send() since preload may not load properly
+            let inspectionScriptInjected = false;
+
+            const inspectionScript = `
+                (function() {
+                    if (window._mosaicInspectorActive) return;
+                    window._mosaicInspectorActive = true;
+                    
+                    let hoveredElement = null;
+                    const highlightStyle = 'outline: 2px solid #ff4757 !important; outline-offset: -2px !important; background-color: rgba(255, 71, 87, 0.1) !important; cursor: crosshair !important;';
+                    
+                    function getSelector(el) {
+                        if (!el || el === document.body) return 'body';
+                        const path = [];
+                        while (el && el !== document.body) {
+                            let selector = el.tagName.toLowerCase();
+                            if (el.id) { selector += '#' + el.id; path.unshift(selector); break; }
+                            else if (el.className && typeof el.className === 'string') {
+                                const classes = el.className.trim().split(/\\s+/).filter(c => c && !c.includes('mosaic')).slice(0, 2);
+                                if (classes.length > 0) selector += '.' + classes.join('.');
+                            }
+                            const parent = el.parentElement;
+                            if (parent) {
+                                const siblings = Array.from(parent.children).filter(s => s.tagName === el.tagName);
+                                if (siblings.length > 1) selector += ':nth-of-type(' + (siblings.indexOf(el) + 1) + ')';
+                            }
+                            path.unshift(selector);
+                            el = el.parentElement;
+                        }
+                        return path.join(' > ');
+                    }
+                    
+                    function getElementData(el) {
+                        if (!el) return null;
+                        const tagName = el.tagName.toLowerCase();
+                        const rect = el.getBoundingClientRect();
+                        
+                        // Improved type detection
+                        let type = 'text';
+                        let value = el.innerText?.trim() || '';
+                        
+                        // Check for SVG - could be SVG element or contain SVG
+                        if (tagName === 'svg' || el.namespaceURI === 'http://www.w3.org/2000/svg') {
+                            type = 'svg';
+                            // Get the full SVG markup
+                            const svgEl = tagName === 'svg' ? el : el.closest('svg') || el;
+                            value = svgEl.outerHTML;
+                        }
+                        // Parent contains SVG
+                        else if (el.querySelector('svg')) {
+                            type = 'svg';
+                            value = el.querySelector('svg').outerHTML;
+                        }
+                        // Image
+                        else if (tagName === 'img') {
+                            type = 'image';
+                            value = el.src;
+                        }
+                        // Background image
+                        else if (window.getComputedStyle(el).backgroundImage !== 'none') {
+                            const bgImage = window.getComputedStyle(el).backgroundImage;
+                            if (bgImage.startsWith('url(')) {
+                                type = 'image';
+                                value = bgImage.slice(5, -2); // Remove url(" and ")
+                            }
+                        }
+                        // Link
+                        else if (tagName === 'a' && el.href) {
+                            type = 'url';
+                            value = el.href;
+                        }
+                        // Input/Textarea
+                        else if (tagName === 'input' || tagName === 'textarea') {
+                            type = 'text';
+                            value = el.value || '';
+                        }
+                        // Video
+                        else if (tagName === 'video') {
+                            type = 'video';
+                            value = el.src || el.querySelector('source')?.src || '';
+                        }
+                        // Default: HTML with text
+                        else if (el.innerHTML && el.innerHTML.length > el.innerText?.length * 1.5) {
+                            type = 'html';
+                            value = el.outerHTML;
+                        }
+                        
+                        const data = {
+                            selector: getSelector(el), 
+                            tagName: tagName,
+                            width: rect.width, 
+                            height: rect.height,
+                            text: el.innerText?.trim().substring(0, 1000) || '',
+                            html: el.outerHTML?.substring(0, 10000) || '',
+                            type: type, 
+                            value: value.substring(0, 50000) // Limit value size
+                        };
+                        
+                        return data;
+                    }
+                    
+                    function handleMouseOver(e) {
+                        e.stopPropagation();
+                        if (hoveredElement && hoveredElement !== e.target) {
+                            hoveredElement.style.cssText = hoveredElement.dataset.originalStyle || '';
+                            delete hoveredElement.dataset.originalStyle;
+                        }
+                        hoveredElement = e.target;
+                        if (!hoveredElement.dataset.originalStyle) hoveredElement.dataset.originalStyle = hoveredElement.style.cssText;
+                        hoveredElement.style.cssText = hoveredElement.dataset.originalStyle + highlightStyle;
+                    }
+                    
+                    function handleClick(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        if (hoveredElement) {
+                            const data = getElementData(hoveredElement);
+                            window._mosaicSelectedData = data;
+                            console.log('[Mosaic Injected] Element Selected:', data);
+                            // Signal to parent
+                            window.postMessage({ type: 'MOSAIC_ELEMENT_SELECTED', data: data }, '*');
+                        }
+                        cleanup();
+                    }
+                    
+                    function cleanup() {
+                        document.removeEventListener('mouseover', handleMouseOver, true);
+                        document.removeEventListener('click', handleClick, true);
+                        document.querySelectorAll('[data-original-style]').forEach(el => {
+                            el.style.cssText = el.dataset.originalStyle || '';
+                            delete el.dataset.originalStyle;
+                        });
+                        window._mosaicInspectorActive = false;
+                        document.body.style.cursor = 'default';
+                    }
+                    
+                    document.body.style.cursor = 'crosshair';
+                    document.addEventListener('mouseover', handleMouseOver, true);
+                    document.addEventListener('click', handleClick, true);
+                    
+                    // Escape to cancel
+                    document.addEventListener('keydown', function escHandler(e) {
+                        if (e.key === 'Escape') { cleanup(); document.removeEventListener('keydown', escHandler, true); }
+                    }, true);
+                    
+                    console.log('[Mosaic Injected] Inspection mode activated');
+                })();
+            `;
+
+            // Listen for console messages from webview
+            webview.addEventListener('console-message', (e) => {
+                // Check for our specially formatted message
+                if (e.message.startsWith('MOSAIC_SELECTED:')) {
+                    try {
+                        const jsonStr = e.message.substring('MOSAIC_SELECTED:'.length);
+                        const data = JSON.parse(jsonStr);
+                        console.log('[UrlNode] Received selection via console:', data);
+                        handleDataReceived(data);
+                        resetModeUI();
+                    } catch (err) {
+                        console.error('[UrlNode] Failed to parse selection:', err);
+                    }
+                }
+            });
+
+            inspectBtn.addEventListener('click', () => {
+                console.log('[UrlNode] Inspect button clicked'); // DEBUG
+                if (isModeActive) {
+                    // Cancel mode
+                    webview.executeJavaScript('if(window._mosaicInspectorActive) { window._mosaicInspectorActive = false; document.body.style.cursor = "default"; }');
+                    resetModeUI();
+                } else {
+                    if (!checkUrl()) return;
+                    isModeActive = true;
+                    inspectBtn.classList.add('active');
+                    inspectBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+                    if (cropBtn) cropBtn.disabled = true;
+
+                    statusText.textContent = 'Hover and click to select an element...';
+
+                    // Inject script directly - use console.log with prefix for communication
+                    const modifiedScript = inspectionScript.replace(
+                        "window.postMessage({ type: 'MOSAIC_ELEMENT_SELECTED', data: data }, '*');",
+                        "console.log('MOSAIC_SELECTED:' + JSON.stringify(data));"
+                    );
+
+                    webview.executeJavaScript(modifiedScript).then(() => {
+                        console.log('[UrlNode] Inspection script injected successfully');
+                    }).catch(err => {
+                        console.error('[UrlNode] Failed to inject inspection script:', err);
+                        statusText.textContent = 'Error: ' + err.message;
+                        resetModeUI();
+                    });
+                }
+            });
+
+
+            // 2. Region Selector
+            if (cropBtn) {
+                cropBtn.addEventListener('click', () => {
+                    if (isModeActive) {
+                        webview.send('set-inspect-mode', 'none');
+                    } else {
+                        if (!checkUrl()) return;
+                        isModeActive = true;
+                        cropBtn.classList.add('active');
+                        cropBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+                        if (inspectBtn) inspectBtn.disabled = true;
+
+                        statusText.textContent = 'Drag to select a region...';
+                        webview.send('set-inspect-mode', 'region');
+                    }
+                });
+            }
+
+            function resetModeUI() {
+                isModeActive = false;
+                if (inspectBtn) {
+                    inspectBtn.classList.remove('active');
+                    inspectBtn.disabled = false;
+                    inspectBtn.innerHTML = '<i class="fas fa-mouse-pointer"></i> Select';
+                }
+                if (cropBtn) {
+                    cropBtn.classList.remove('active');
+                    cropBtn.disabled = false;
+                    cropBtn.innerHTML = '<i class="fas fa-crop-alt"></i> Region';
+                }
+                statusText.textContent = 'Ready';
+            }
+
+            // ========== DATA CARD FUNCTIONS ==========
+            const outgoingCards = document.getElementById('outgoing-cards');
+            const incomingCards = document.getElementById('incoming-cards');
+            let cardIdCounter = 0;
+
+            console.log('[UrlNode] Panel elements:', { outgoingCards, incomingCards }); // DEBUG
+
+            function createDataCard(data, panel, sourceInfo = null) {
+                // REDIRECT TO CENTRAL STORE (Fix for Persistence & UI Duplication)
+                if (window.parent && window.parent.dataCardStore) {
+                    try {
+                        const nodeEl = window.frameElement?.closest('.node');
+                        if (nodeEl?.id) {
+                            console.log('[UrlNode] Redirecting data to store:', nodeEl.id);
+                            window.parent.dataCardStore.addPacket(nodeEl.id, data, 'remote', { append: true });
+                            return null;
+                        }
+                    } catch (e) { console.warn('[UrlNode] Store redirect failed:', e); }
+                }
+                return null; // Disable legacy UI creation
+
+                /* DEPRECATED LEGACY LOGIC
+                console.log('[UrlNode] createDataCard called:', { data, panel, sourceInfo }); // DEBUG
+
+                if (!panel) {
+                    // console.error('[UrlNode] Panel is null!');
+                    return null;
+                }
+                */
+
+                const cardId = 'card-' + (++cardIdCounter);
+
+                // Clear empty state if exists
+                const empty = panel.querySelector('.panel-empty');
+                if (empty) empty.remove();
+
+                // Create card element (use window.document since local 'document' is ShadowRoot)
+                const card = window.document.createElement('div');
+                card.className = 'data-card';
+                card.id = cardId;
+                card.draggable = true;
+                card.dataset.type = data.type || 'text';
+                card.dataset.selector = data.selector || '';
+                card.dataset.value = data.value || '';
+
+                // Store full data
+                card._data = data;
+
+                // Header with type badge
+                const header = window.document.createElement('div');
+                header.className = 'data-card-header';
+
+                const typeBadge = window.document.createElement('span');
+                typeBadge.className = 'data-card-type ' + (data.type || 'text');
+                typeBadge.textContent = data.type || 'text';
+                header.appendChild(typeBadge);
+
+                if (data.tagName) {
+                    const tagSpan = window.document.createElement('span');
+                    tagSpan.style.color = '#666';
+                    tagSpan.style.fontSize = '10px';
+                    tagSpan.textContent = '<' + data.tagName + '>';
+                    header.appendChild(tagSpan);
+                }
+
+                card.appendChild(header);
+
+                // Preview
+                const preview = window.document.createElement('div');
+                preview.className = 'data-card-preview';
+
+                if (data.type === 'image' && data.value) {
+                    const img = window.document.createElement('img');
+                    img.src = data.value;
+                    img.onerror = () => { preview.textContent = '[Image failed]'; };
+                    preview.appendChild(img);
+                } else {
+                    preview.textContent = data.text?.substring(0, 80) || data.value?.substring(0, 80) || '[No text]';
+                }
+                card.appendChild(preview);
+
+                // Source info
+                if (sourceInfo) {
+                    const source = window.document.createElement('div');
+                    source.className = 'data-card-source';
+                    source.innerHTML = '<i class="fas fa-link"></i> ' + (sourceInfo.substring(0, 30) || 'Unknown');
+                    card.appendChild(source);
+                }
+
+                // Action buttons row
+                const actions = window.document.createElement('div');
+                actions.className = 'data-card-actions';
+
+                // Copy to clipboard button
+                const copyBtn = window.document.createElement('button');
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                copyBtn.title = 'Copy to clipboard for paste (Cmd+V)';
+                copyBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    try {
+                        const parentWindow = window.top || window.parent || window;
+                        let textToCopy = '';
+                        let statusMsg = '';
+
+                        // Determine what to copy based on data type
+                        if (data.type === 'image' && data.value) {
+                            textToCopy = data.value;
+                            statusMsg = 'Image URL copied!';
+                        } else if (data.type === 'svg' || data.type === 'html') {
+                            textToCopy = data.value || data.html;
+                            statusMsg = 'HTML/SVG copied!';
+                        } else {
+                            textToCopy = data.text || data.value;
+                            statusMsg = 'Text copied!';
+                        }
+
+                        // Use Electron IPC
+                        if (parentWindow.electronAPI?.writeClipboardText) {
+                            await parentWindow.electronAPI.writeClipboardText(textToCopy);
+                            statusText.textContent = statusMsg;
+                        } else {
+                            statusText.textContent = 'Copy failed: No clipboard API';
+                        }
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                    } catch (err) {
+                        console.error('[UrlNode] Clipboard error:', err);
+                        statusText.textContent = 'Copy failed: ' + err.message;
+                    }
+                });
+                actions.appendChild(copyBtn);
+
+                // Delete button - ONLY for outgoing panel (sender decides what to delete)
+                if (panel === outgoingCards) {
+                    const deleteBtn = window.document.createElement('button');
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteBtn.title = 'Remove this card';
+                    deleteBtn.style.background = '#c0392b';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+
+                        const cardBindingId = card.dataset.bindingId;
+
+                        // Stop watching this element
+                        if (cardBindingId) {
+                            stopWatching(cardBindingId);
+
+                            // Send DELETE notification to connected nodes
+                            const deletePacket = new SDP.MosaicData(
+                                SDP.MosaicTypes.COMMAND,
+                                { action: 'DELETE', bindingId: cardBindingId },
+                                {
+                                    source: webview.getURL(),
+                                    isDelete: true,
+                                    bindingId: cardBindingId
+                                }
+                            );
+                            nodeContext.Mosaic.send(deletePacket);
+                            logger.info('[UrlNode] Sent delete notification for binding:', cardBindingId);
+                        }
+
+                        card.remove();
+
+                        // Restore empty state if no cards left
+                        if (panel.querySelectorAll('.data-card').length === 0) {
+                            const emptyDiv = window.document.createElement('div');
+                            emptyDiv.className = 'panel-empty';
+                            emptyDiv.innerHTML = '<i class="fas fa-mouse-pointer"></i> Select an element to capture';
+                            panel.appendChild(emptyDiv);
+                        }
+                    });
+                    actions.appendChild(deleteBtn);
+                }
+
+                // INJECT button - ONLY for incoming panel (to inject and register for auto-update)
+                if (panel === incomingCards) {
+                    const injectBtn = window.document.createElement('button');
+                    injectBtn.innerHTML = '<i class="fas fa-syringe"></i>';
+                    injectBtn.title = 'Type text at cursor position (with live binding!)';
+                    injectBtn.style.background = '#9b59b6';
+                    injectBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+
+                        const cardBindingId = card.dataset.bindingId;
+                        const cardData = card._data || data;
+                        const valueToInject = cardData.text || cardData.value || '';
+
+                        console.log('[UrlNode] 💉 Hybrid insert, bindingId:', cardBindingId, 'value:', valueToInject.substring(0, 50));
+                        statusText.textContent = 'Typing at cursor position...';
+
+                        // ========== STEP 1: Check what's focused BEFORE insertion ==========
+                        const preCheckScript = `
+                            (function() {
+                                const active = document.activeElement;
+                                const tagName = (active?.tagName || '').toLowerCase();
+                                
+                                // Check if it's an iframe (cross-origin)
+                                if (tagName === 'iframe') {
+                                    return { type: 'iframe', canTrack: false };
+                                }
+                                
+                                // Check if it's input/textarea
+                                if (tagName === 'input' || tagName === 'textarea') {
+                                    const selStart = active.selectionStart || 0;
+                                    // Build selector
+                                    let selector = tagName;
+                                    if (active.id) selector = '#' + active.id;
+                                    else if (active.name) selector = tagName + '[name="' + active.name + '"]';
+                                    else if (active.className) selector = tagName + '.' + active.className.split(' ').filter(c=>c)[0];
+                                    
+                                    return { type: 'input', canTrack: true, selector: selector, selectionStart: selStart };
+                                }
+                                
+                                // Check if it's contenteditable
+                                if (active?.isContentEditable || active?.contentEditable === 'true') {
+                                    return { type: 'contenteditable', canTrack: true };
+                                }
+                                
+                                // Unknown/body
+                                return { type: 'unknown', canTrack: false };
+                            })();
+                        `;
+
+                        let targetInfo = { type: 'unknown', canTrack: false };
+                        try {
+                            targetInfo = await webview.executeJavaScript(preCheckScript);
+                            console.log('[UrlNode] Pre-check result:', targetInfo);
+                        } catch (err) {
+                            console.warn('[UrlNode] Pre-check failed:', err);
+                        }
+
+                        // ========== STEP 2: Insert text using native API ==========
+                        try {
+                            await webview.insertText(valueToInject);
+                            console.log('[UrlNode] ✅ insertText successful!');
+                            statusText.textContent = 'Injected!';
+                        } catch (err) {
+                            console.error('[UrlNode] insertText failed:', err);
+                            statusText.textContent = 'Failed - click in target first';
+                            setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                            return;
+                        }
+
+                        // ========== STEP 3: Post-insertion tracking ==========
+                        let trackingMethod = 'insertText';
+                        let targetSelector = null;
+                        let rangeData = null;
+
+                        if (targetInfo.canTrack) {
+                            if (targetInfo.type === 'input') {
+                                // For input/textarea: store selector and range
+                                targetSelector = targetInfo.selector;
+                                rangeData = {
+                                    startPosition: targetInfo.selectionStart,
+                                    currentLength: valueToInject.length
+                                };
+                                trackingMethod = 'range';
+                                console.log('[UrlNode] 📍 Range tracking enabled:', targetSelector, rangeData);
+                            } else if (targetInfo.type === 'contenteditable') {
+                                // For contenteditable: try to add marker AFTER insertText
+                                const addMarkerScript = `
+                                    (function() {
+                                        const bindingId = '${cardBindingId}';
+                                        const valueLength = ${valueToInject.length};
+                                        
+                                        const selection = window.getSelection();
+                                        if (!selection || selection.rangeCount === 0) return null;
+                                        
+                                        const range = selection.getRangeAt(0);
+                                        
+                                        // Move range back to cover the just-inserted text
+                                        try {
+                                            range.setStart(range.startContainer, range.startOffset - valueLength);
+                                        } catch (e) {
+                                            return null;
+                                        }
+                                        
+                                        // Extract the inserted text
+                                        const insertedText = range.toString();
+                                        if (!insertedText) return null;
+                                        
+                                        // Wrap in marker span
+                                        const marker = document.createElement('span');
+                                        marker.setAttribute('data-mosaic-binding', bindingId);
+                                        marker.style.cssText = 'background: transparent; display: inline;';
+                                        
+                                        range.surroundContents(marker);
+                                        
+                                        // Move cursor after marker
+                                        range.setStartAfter(marker);
+                                        range.setEndAfter(marker);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                        
+                                        return '[data-mosaic-binding="' + bindingId + '"]';
+                                    })();
+                                `;
+
+                                try {
+                                    const markerSelector = await webview.executeJavaScript(addMarkerScript);
+                                    if (markerSelector) {
+                                        targetSelector = markerSelector;
+                                        trackingMethod = 'marker';
+                                        console.log('[UrlNode] 📍 Marker added:', markerSelector);
+                                    }
+                                } catch (err) {
+                                    console.warn('[UrlNode] Marker addition failed:', err);
+                                }
+                            }
+                        } else if (targetInfo.type === 'iframe') {
+                            // For cross-origin iframe: use select-all strategy for re-injection
+                            trackingMethod = 'selectAll';
+                            console.log('[UrlNode] 📍 SelectAll strategy for iframe (re-inject will Cmd+A first)');
+                        }
+
+                        // ========== STEP 4: Register in injection registry ==========
+                        // Store directly in the registry (no console message needed)
+                        injectionRegistry.set(cardBindingId, {
+                            targetSelector: targetSelector,
+                            trackingMethod: trackingMethod,
+                            rangeData: rangeData,
+                            lastValue: valueToInject,
+                            iframeTarget: targetInfo.type === 'iframe'
+                        });
+
+                        console.log('[UrlNode] 📍 Registered for auto-update:', cardBindingId, trackingMethod);
+                        statusText.textContent = 'Injected - live binding active!';
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                    });
+                    actions.appendChild(injectBtn);
+                }
+
+                card.appendChild(actions);
+
+                // Drag events for injection - also copy to clipboard for paste fallback
+                card.addEventListener('dragstart', async (e) => {
+                    // Include bindingId in drag data for injection tracking
+                    const dragData = {
+                        ...data,
+                        bindingId: card.dataset.bindingId || data.bindingId || ''
+                    };
+                    console.log('[UrlNode] 📦 Dragging card with bindingId:', dragData.bindingId);
+
+                    e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+                    e.dataTransfer.setData('text/plain', data.text || data.value || '');
+                    if (data.type === 'html' || data.type === 'svg') {
+                        e.dataTransfer.setData('text/html', data.value || data.html);
+                    }
+                    card.classList.add('dragging');
+
+                    // Also copy to system clipboard for paste fallback
+                    try {
+                        const parentWindow = window.top || window.parent || window;
+                        if (parentWindow.electronAPI?.writeClipboardText) {
+                            await parentWindow.electronAPI.writeClipboardText(data.text || data.value || '');
+                        }
+                    } catch (err) {
+                        // Clipboard may not be available, ignore
+                    }
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+
+                panel.appendChild(card);
+                return card;
+            }
+
+            // ========== DRAG-TO-INJECT ==========
+            // When cards are dragged onto the webview, inject data into focused element
+
+            const webviewContainer = document.getElementById('webview-container');
+            let dragData = null;
+
+            // Inject drop zone highlighting script
+            const dropZoneScript = `
+                (function() {
+                    if (window._mosaicDropActive) return;
+                    window._mosaicDropActive = true;
+                    
+                    let lastTarget = null;
+                    const dropStyle = 'outline: 3px dashed #2ed573 !important; outline-offset: -3px !important; background-color: rgba(46, 213, 115, 0.15) !important;';
+                    
+                    document.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const target = e.target;
+                        if (target !== lastTarget) {
+                            if (lastTarget) {
+                                lastTarget.style.cssText = lastTarget.dataset.dropOriginalStyle || '';
+                                delete lastTarget.dataset.dropOriginalStyle;
+                            }
+                            lastTarget = target;
+                            if (!target.dataset.dropOriginalStyle) {
+                                target.dataset.dropOriginalStyle = target.style.cssText;
+                            }
+                            target.style.cssText = target.dataset.dropOriginalStyle + dropStyle;
+                        }
+                    }, true);
+                    
+                    document.addEventListener('dragleave', function(e) {
+                        if (e.target === lastTarget) {
+                            lastTarget.style.cssText = lastTarget.dataset.dropOriginalStyle || '';
+                            delete lastTarget.dataset.dropOriginalStyle;
+                            lastTarget = null;
+                        }
+                    }, true);
+                    
+                    document.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Clean up highlighting
+                        if (lastTarget) {
+                            lastTarget.style.cssText = lastTarget.dataset.dropOriginalStyle || '';
+                            delete lastTarget.dataset.dropOriginalStyle;
+                        }
+                        
+                        // Get the drop data from dataTransfer
+                        const jsonData = e.dataTransfer.getData('application/json');
+                        if (!jsonData) {
+                            console.log('[Mosaic Drop] No JSON data');
+                            return;
+                        }
+                        
+                        try {
+                            const data = JSON.parse(jsonData);
+                            const target = e.target;
+                            const tagName = target.tagName.toLowerCase();
+                            const bindingId = data.bindingId || '';
+                            
+                            console.log('[Mosaic Drop] Dropping:', data, 'onto:', tagName, target, 'bindingId:', bindingId);
+                            
+                            let trackingMethod = 'selector';
+                            let rangeData = null;
+                            let targetSelector = null;
+                            
+                            // Inject based on target type
+                            if (tagName === 'input' || tagName === 'textarea') {
+                                // Text input - insert at cursor position (range-based tracking)
+                                const start = target.selectionStart || target.value.length;
+                                const end = target.selectionEnd || target.value.length;
+                                const before = target.value.substring(0, start);
+                                const after = target.value.substring(end);
+                                const insertValue = data.text || data.value || '';
+                                
+                                target.value = before + insertValue + after;
+                                target.setSelectionRange(start + insertValue.length, start + insertValue.length);
+                                target.dispatchEvent(new Event('input', { bubbles: true }));
+                                target.dispatchEvent(new Event('change', { bubbles: true }));
+                                
+                                trackingMethod = 'range';
+                                rangeData = { startPosition: start, currentLength: insertValue.length };
+                                targetSelector = target.id ? '#' + target.id : 
+                                    (target.name ? tagName + '[name="' + target.name + '"]' : tagName);
+                            }
+                            else if (tagName === 'img') {
+                                // Image - set src if we have image data
+                                if (data.type === 'image') {
+                                    target.src = data.value;
+                                }
+                                trackingMethod = 'selector';
+                            }
+                            else if (target.isContentEditable || tagName === 'div' && target.contentEditable === 'true') {
+                                // Contenteditable - insert with marker span
+                                const insertValue = data.text || data.value || '';
+                                
+                                if (bindingId) {
+                                    // Create marker span for tracking
+                                    const marker = document.createElement('span');
+                                    marker.setAttribute('data-mosaic-binding', bindingId);
+                                    marker.style.cssText = 'background: transparent; display: inline;';
+                                    
+                                    if (data.type === 'svg' || data.type === 'html') {
+                                        marker.innerHTML = data.value || data.html || insertValue;
+                                    } else {
+                                        marker.textContent = insertValue;
+                                    }
+                                    
+                                    // Insert at cursor or append
+                                    const selection = window.getSelection();
+                                    if (selection.rangeCount > 0 && target.contains(selection.anchorNode)) {
+                                        const range = selection.getRangeAt(0);
+                                        range.deleteContents();
+                                        range.insertNode(marker);
+                                        range.setStartAfter(marker);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                    } else {
+                                        target.appendChild(marker);
+                                    }
+                                    
+                                    trackingMethod = 'marker';
+                                    targetSelector = '[data-mosaic-binding="' + bindingId + '"]';
+                                } else {
+                                    // No bindingId, fallback to old behavior
+                                    if (data.type === 'svg' || data.type === 'html') {
+                                        target.innerHTML = data.value || data.html || data.text;
+                                    } else {
+                                        target.textContent = data.text || data.value;
+                                    }
+                                }
+                                target.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                            else {
+                                // Generic element - try innerHTML for SVG/HTML, else textContent
+                                if (data.type === 'svg' || data.type === 'html') {
+                                    target.innerHTML = data.value || data.html;
+                                } else if (data.type === 'image') {
+                                    const img = document.createElement('img');
+                                    img.src = data.value;
+                                    img.style.maxWidth = '100%';
+                                    target.appendChild(img);
+                                } else {
+                                    target.textContent = data.text || data.value;
+                                }
+                            }
+                            
+                            // Generate selector if not already set
+                            if (!targetSelector) {
+                                let sel = tagName;
+                                if (target.id) sel = '#' + target.id;
+                                else if (target.className && typeof target.className === 'string') {
+                                    sel += '.' + target.className.split(' ').filter(c => c).slice(0, 1).join('.');
+                                }
+                                targetSelector = sel;
+                            }
+                            
+                            // Log successful injection with tracking info
+                            console.log('MOSAIC_INJECTED:' + JSON.stringify({
+                                targetSelector: targetSelector,
+                                dataType: data.type,
+                                bindingId: bindingId,
+                                trackingMethod: trackingMethod,
+                                rangeData: rangeData,
+                                success: true
+                            }));
+                            
+                        } catch (err) {
+                            console.error('[Mosaic Drop] Error:', err);
+                        }
+                        
+                        lastTarget = null;
+                        window._mosaicDropActive = false;
+                    }, true);
+                    
+                    console.log('[Mosaic Drop] Drop zones activated');
+                })();
+            `;
+
+            // Track if drop zone is active
+            let dropZoneActive = false;
+
+            // Enable drop zone when drag enters webview container
+            webviewContainer.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (!dropZoneActive) {
+                    dropZoneActive = true;
+                    webview.executeJavaScript(dropZoneScript).catch(err => {
+                        console.error('[UrlNode] Failed to enable drop zones:', err);
+                    });
+                    statusText.textContent = 'Drop on target element...';
+                }
+            });
+
+            webviewContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            });
+
+            webviewContainer.addEventListener('dragleave', (e) => {
+                // Only deactivate if truly leaving the container
+                if (!webviewContainer.contains(e.relatedTarget)) {
+                    dropZoneActive = false;
+                    statusText.textContent = 'Ready';
+                }
+            });
+
+            webviewContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZoneActive = false;
+
+                // The actual drop handling is done in the injected script
+                // We just need to pass the data to the webview
+                const jsonData = e.dataTransfer.getData('application/json');
+                if (jsonData) {
+                    const data = JSON.parse(jsonData);
+
+                    // Enhanced injection script with REAL clipboard paste simulation
+                    const injectDropScript = `
+                        (async function() {
+                            const data = ${jsonData};
+                            // Get element under cursor (last highlighted)
+                            const target = document.querySelector('[data-drop-original-style]') || document.activeElement;
+                            
+                            if (!target) {
+                                console.log('MOSAIC_INJECTED:' + JSON.stringify({ success: false, reason: 'no target' }));
+                                return;
+                            }
+                            
+                            target.focus();
+                            const tagName = target.tagName.toLowerCase();
+                            let success = false;
+                            const valueToInject = data.text || data.value || '';
+                            
+                            // ========== REAL CLIPBOARD PASTE SIMULATION ==========
+                            try {
+                                // Step 1: Copy to system clipboard via Electron IPC
+                                const parentWindow = window.top || window.parent || window;
+                                if (parentWindow.electronAPI?.writeClipboardText) {
+                                    await parentWindow.electronAPI.writeClipboardText(valueToInject);
+                                }
+                                console.log('[Mosaic Drop] Copied to clipboard');
+                                
+                                // Step 2: Create and dispatch paste event
+                                const clipboardData = new DataTransfer();
+                                clipboardData.setData('text/plain', valueToInject);
+                                if (data.type === 'html' || data.type === 'svg') {
+                                    clipboardData.setData('text/html', data.value || data.html || valueToInject);
+                                }
+                                
+                                const pasteEvent = new ClipboardEvent('paste', {
+                                    bubbles: true, cancelable: true, clipboardData: clipboardData
+                                });
+                                
+                                const handled = !target.dispatchEvent(pasteEvent);
+                                if (handled) {
+                                    console.log('[Mosaic Drop] Paste event handled by app');
+                                    success = true;
+                                }
+                                
+                                // Step 3: Fallback to direct manipulation for inputs
+                                if (!success && (tagName === 'input' || tagName === 'textarea')) {
+                                    target.value = valueToInject;
+                                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                                    success = true;
+                                }
+                                
+                                // Step 4: Fallback for contenteditable
+                                if (!success && target.isContentEditable) {
+                                    document.execCommand('insertText', false, valueToInject);
+                                    success = true;
+                                }
+                                
+                                // Step 5: Simulate Cmd+V if still not successful
+                                if (!success) {
+                                    console.log('[Mosaic Drop] Simulating Cmd+V');
+                                    const keyDownV = new KeyboardEvent('keydown', {
+                                        key: 'v', code: 'KeyV', keyCode: 86,
+                                        bubbles: true, metaKey: true
+                                    });
+                                    target.dispatchEvent(keyDownV);
+                                    success = true; // Assume success since clipboard has content
+                                }
+                            } catch (err) {
+                                console.error('[Mosaic Drop] Clipboard failed:', err);
+                                // Final fallback: direct DOM
+                                if (tagName === 'input' || tagName === 'textarea') {
+                                    target.value = valueToInject;
+                                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                                    success = true;
+                                }
+                            }
+                            
+                            // Cleanup highlight
+                            target.style.cssText = target.dataset.dropOriginalStyle || '';
+                            delete target.dataset.dropOriginalStyle;
+                            
+                            // Visual feedback
+                            if (success) {
+                                target.style.backgroundColor = 'rgba(46, 213, 115, 0.3)';
+                                setTimeout(() => { target.style.backgroundColor = ''; }, 500);
+                            }
+                            
+                            window._mosaicDropActive = false;
+                            
+                            // Generate selector and register for auto-update
+                            if (success && data.bindingId) {
+                                function getSelector(el) {
+                                    if (el.id) return '#' + el.id;
+                                    let path = [];
+                                    let current = el;
+                                    while (current && current !== document.body) {
+                                        let sel = current.tagName.toLowerCase();
+                                        if (current.id) { path.unshift('#' + current.id); break; }
+                                        if (current.className && typeof current.className === 'string') {
+                                            const cls = current.className.trim().split(/\\s+/).filter(c => c).slice(0, 1);
+                                            if (cls.length) sel += '.' + cls.join('.');
+                                        }
+                                        const parent = current.parentElement;
+                                        if (parent) {
+                                            const sibs = Array.from(parent.children).filter(c => c.tagName === current.tagName);
+                                            if (sibs.length > 1) sel += ':nth-of-type(' + (sibs.indexOf(current) + 1) + ')';
+                                        }
+                                        path.unshift(sel);
+                                        current = current.parentElement;
+                                    }
+                                    return path.join(' > ');
+                                }
+                                
+                                const targetSelector = getSelector(target);
+                                console.log('[Mosaic Drop] Target selector:', targetSelector);
+                                console.log('MOSAIC_INJECTED:' + JSON.stringify({ 
+                                    success: true, 
+                                    method: 'clipboard', 
+                                    bindingId: data.bindingId,
+                                    targetSelector: targetSelector
+                                }));
+                            } else {
+                                console.log('MOSAIC_INJECTED:' + JSON.stringify({ success: success, method: 'fallback', bindingId: data.bindingId || 'none' }));
+                            }
+                        })();
+                    `;
+
+                    webview.executeJavaScript(injectDropScript).then(() => {
+                        statusText.textContent = 'Injected!';
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                    }).catch(err => {
+                        console.error('[UrlNode] Injection failed:', err);
+                        statusText.textContent = 'Injection failed - try Copy then Cmd+V';
+                    });
+                }
+            });
+
+            // Injection tracking registry: bindingId -> { targetSelector, trackingMethod, rangeData, lastValue }
+            const injectionRegistry = new Map();
+
+            // Listen for injection confirmation and track targets
+            webview.addEventListener('console-message', (e) => {
+                // DEBUG: Log ALL console messages from webview to see what's coming through
+                if (e.message.includes('MOSAIC') || e.message.includes('Mosaic')) {
+                    console.log('[UrlNode] 📨 WEBVIEW MESSAGE:', e.message.substring(0, 150));
+                }
+
+                // Handle drop-based injection registration
+                if (e.message.startsWith('MOSAIC_INJECTED:')) {
+                    try {
+                        const result = JSON.parse(e.message.substring('MOSAIC_INJECTED:'.length));
+                        console.log('[UrlNode] Injection result:', result);
+
+                        // Track successful injection for auto-update
+                        if (result.success && result.bindingId && result.targetSelector) {
+                            injectionRegistry.set(result.bindingId, {
+                                targetSelector: result.targetSelector,
+                                trackingMethod: result.trackingMethod || 'selector',
+                                rangeData: result.rangeData || null,
+                                lastValue: null
+                            });
+                            console.log('[UrlNode] 📍 Registered injection target:', result.bindingId, '->', result.targetSelector);
+                            statusText.textContent = 'Injection registered for auto-update!';
+                        }
+                    } catch (err) { /* ignore */ }
+                }
+
+                // Handle button-based injection registration (from Inject button)
+                if (e.message.startsWith('MOSAIC_INJECT_REGISTERED:')) {
+                    try {
+                        const result = JSON.parse(e.message.substring('MOSAIC_INJECT_REGISTERED:'.length));
+                        console.log('[UrlNode] 💉 Injection registered:', result);
+
+                        // Check for no_focus error
+                        if (!result.success && result.reason === 'no_focus') {
+                            statusText.textContent = 'Click in target field first, then inject!';
+                            setTimeout(() => { statusText.textContent = 'Ready'; }, 3000);
+                            return;
+                        }
+
+                        // Track successful injection for auto-update
+                        if (result.success && result.bindingId && result.targetSelector) {
+                            injectionRegistry.set(result.bindingId, {
+                                targetSelector: result.targetSelector,
+                                trackingMethod: result.trackingMethod || (result.useMarker ? 'marker' : 'selector'),
+                                rangeData: result.rangeData || null,
+                                useMarker: result.useMarker || false,
+                                lastValue: null
+                            });
+                            console.log('[UrlNode] 📍 Registered injection target:', result.bindingId, '->', result.targetSelector, 'method:', result.trackingMethod);
+
+                            // Status message based on tracking method
+                            const methodMessages = {
+                                'marker': 'Injected with marker - auto-update enabled!',
+                                'range': 'Injected at cursor - range tracking enabled!',
+                                'clipboard': 'Injected via clipboard!'
+                            };
+                            statusText.textContent = methodMessages[result.trackingMethod] || 'Injected & registered!';
+                            setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                        } else if (!result.success) {
+                            statusText.textContent = 'Injection failed';
+                            setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+                        }
+                    } catch (err) {
+                        console.error('[UrlNode] Failed to parse inject registration:', err);
+                    }
+                }
+
+                // Handle range data update after re-injection
+                if (e.message.startsWith('MOSAIC_RANGE_UPDATED:')) {
+                    try {
+                        const result = JSON.parse(e.message.substring('MOSAIC_RANGE_UPDATED:'.length));
+                        console.log('[UrlNode] 📏 Range updated:', result);
+
+                        // Update the injection registry with new length
+                        if (result.bindingId && injectionRegistry.has(result.bindingId)) {
+                            const injection = injectionRegistry.get(result.bindingId);
+                            if (injection.rangeData) {
+                                injection.rangeData.currentLength = result.newLength;
+                                console.log('[UrlNode] Updated range length for', result.bindingId, 'to', result.newLength);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('[UrlNode] Failed to parse range update:', err);
+                    }
+                }
+            });
+
+            // ========== LIVE BINDING SYSTEM ==========
+            // Track bindings between source selectors and target injections
+            const bindings = new Map(); // bindingId -> { sourceSelector, targetSelector, lastValue }
+            let observerActive = false;
+            let bindingIdCounter = 0;
+
+            // Start watching a selector for changes
+            function startWatching(selector, bindingId) {
+                const watchScript = `
+                    (function() {
+                        const bindingId = '${bindingId}';
+                        const selector = '${selector.replace(/'/g, "\\'")}';
+                        
+                        console.log('[Mosaic] 🎯 Starting watcher for:', selector, 'bindingId:', bindingId);
+                        
+                        // Store observer/listener references
+                        if (!window._mosaicObservers) window._mosaicObservers = {};
+                        if (!window._mosaicListeners) window._mosaicListeners = {};
+                        if (!window._mosaicWatchData) window._mosaicWatchData = {};
+                        
+                        // If already watching, skip
+                        if (window._mosaicObservers[bindingId]) {
+                            console.log('[Mosaic] Already watching this binding');
+                            return;
+                        }
+                        
+                        // Store initial state
+                        let currentEl = document.querySelector(selector);
+                        let lastValue = '';
+                        let lastText = '';
+                        
+                        if (currentEl) {
+                            lastValue = currentEl.value || currentEl.innerText || currentEl.outerHTML || '';
+                            lastText = currentEl.innerText || currentEl.value || '';
+                        }
+                        
+                        function sendUpdate(el, forceText) {
+                            const text = forceText || el?.innerText || el?.value || '';
+                            const value = el?.value || el?.innerText || el?.outerHTML || '';
+                            
+                            if (value === lastValue && text === lastText) return;
+                            
+                            lastValue = value;
+                            lastText = text;
+                            
+                            const tagName = (el?.tagName || 'div').toLowerCase();
+                            
+                            // Determine type
+                            let type = 'text';
+                            let finalValue = value;
+                            if (tagName === 'svg' || el?.namespaceURI === 'http://www.w3.org/2000/svg') {
+                                type = 'svg'; finalValue = el.outerHTML;
+                            } else if (el?.querySelector && el.querySelector('svg')) {
+                                type = 'svg'; finalValue = el.querySelector('svg').outerHTML;
+                            } else if (tagName === 'img') {
+                                type = 'image'; finalValue = el.src;
+                            }
+                            
+                            console.log('[Mosaic] 📤 Sending LIVE UPDATE:', { bindingId, text: text.substring(0, 50) });
+                            
+                            console.log('MOSAIC_LIVE_UPDATE:' + JSON.stringify({
+                                bindingId: bindingId,
+                                selector: selector,
+                                type: type,
+                                value: (finalValue || '').substring(0, 50000),
+                                text: (text || '').substring(0, 1000)
+                            }));
+                        }
+                        
+                        // Main polling function - re-finds element each time
+                        function pollCheck() {
+                            // Re-query the selector each time (handles element replacement)
+                            const el = document.querySelector(selector);
+                            
+                            if (!el) {
+                                // Element not found - maybe page changed, keep trying
+                                console.log('[Mosaic] ⏳ Element not found, waiting...', selector.substring(0, 50));
+                                return;
+                            }
+                            
+                            // Check if element changed
+                            if (el !== currentEl) {
+                                console.log('[Mosaic] 🔄 Element replaced, updating reference');
+                                currentEl = el;
+                            }
+                            
+                            const currentText = el.innerText || el.value || '';
+                            const currentValue = el.value || el.innerText || el.outerHTML || '';
+                            
+                            if (currentText !== lastText || currentValue !== lastValue) {
+                                sendUpdate(el, currentText);
+                            }
+                        }
+                        
+                        // Also watch a stable parent for DOM changes
+                        const watchParent = currentEl?.closest('[class]') || currentEl?.parentElement || document.body;
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            // Use setTimeout to let DOM settle
+                            setTimeout(pollCheck, 100);
+                        });
+                        
+                        observer.observe(watchParent, {
+                            childList: true,
+                            subtree: true,
+                            characterData: true
+                        });
+                        
+                        // Polling every 500ms for fast updates (Google Translate, etc)
+                        const pollInterval = setInterval(pollCheck, 500);
+                        
+                        // Initial check after short delay
+                        setTimeout(pollCheck, 200);
+                        
+                        window._mosaicObservers[bindingId] = { observer, pollInterval, watchParent };
+                        window._mosaicWatchData[bindingId] = { selector, lastValue, lastText };
+                        
+                        console.log('[Mosaic] ✅ Watcher active for:', selector.substring(0, 50));
+                    })();
+                `;
+
+                webview.executeJavaScript(watchScript).catch(err => {
+                    console.error('[UrlNode] Failed to start watching:', err);
+                });
+            }
+
+            // Stop watching a binding
+            function stopWatching(bindingId) {
+                const stopScript = `
+                    (function() {
+                        // Cleanup MutationObserver and poll interval
+                        if (window._mosaicObservers && window._mosaicObservers['${bindingId}']) {
+                            const obs = window._mosaicObservers['${bindingId}'];
+                            if (obs.observer) obs.observer.disconnect();
+                            if (obs.pollInterval) clearInterval(obs.pollInterval);
+                            delete window._mosaicObservers['${bindingId}'];
+                        }
+                        
+                        // Cleanup input event listeners
+                        if (window._mosaicListeners && window._mosaicListeners['${bindingId}']) {
+                            const listener = window._mosaicListeners['${bindingId}'];
+                            if (listener.el && listener.inputHandler) {
+                                listener.el.removeEventListener('input', listener.inputHandler);
+                                listener.el.removeEventListener('change', listener.inputHandler);
+                            }
+                            delete window._mosaicListeners['${bindingId}'];
+                        }
+                        
+                        console.log('[Mosaic] Stopped watching binding:', '${bindingId}');
+                    })();
+                `;
+                webview.executeJavaScript(stopScript).catch(err => { });
+                bindings.delete(bindingId);
+            }
+
+            // Listen for live updates from watched elements
+            webview.addEventListener('console-message', (e) => {
+                if (e.message.startsWith('MOSAIC_LIVE_UPDATE:')) {
+                    try {
+                        const updateData = JSON.parse(e.message.substring('MOSAIC_LIVE_UPDATE:'.length));
+                        console.log('[UrlNode] 🔄 LIVE UPDATE received:', updateData);
+                        console.log('[UrlNode] Looking for bindingId:', updateData.bindingId);
+
+                        // Update the card in outgoing panel BY BINDING ID
+                        const cards = outgoingCards.querySelectorAll('.data-card');
+                        let cardFound = false;
+
+                        console.log('[UrlNode] Outgoing cards count:', cards.length);
+                        cards.forEach((card, idx) => {
+                            console.log(`[UrlNode] Card ${idx} bindingId:`, card.dataset.bindingId);
+                            if (card.dataset.bindingId === updateData.bindingId) {
+                                cardFound = true;
+                                console.log('[UrlNode] ✅ MATCH FOUND! Updating card...');
+
+                                // Update preview
+                                const preview = card.querySelector('.data-card-preview');
+                                if (preview) {
+                                    if (updateData.type === 'image') {
+                                        preview.innerHTML = '<img src="' + updateData.value + '" style="max-width:100%;max-height:50px;border-radius:3px;">';
+                                    } else {
+                                        preview.textContent = updateData.text?.substring(0, 80) || updateData.value?.substring(0, 80) || '[Updated]';
+                                    }
+                                    console.log('[UrlNode] Preview updated to:', preview.textContent.substring(0, 50));
+                                }
+                                // Update stored data
+                                card._data = { ...card._data, ...updateData };
+
+                                // Visual feedback - flash green
+                                card.style.transition = 'box-shadow 0.3s';
+                                card.style.boxShadow = '0 0 10px #2ed573';
+                                setTimeout(() => { card.style.boxShadow = ''; }, 500);
+
+                                statusText.textContent = 'Updated: ' + (updateData.text || '').substring(0, 20);
+                            }
+                        });
+
+                        if (!cardFound) {
+                            console.warn('[UrlNode] ❌ NO MATCH! bindingId not found:', updateData.bindingId);
+                            console.log('[UrlNode] Available bindingIds:', Array.from(cards).map(c => c.dataset.bindingId));
+                        }
+
+                        // Send update to connected nodes
+                        const sdpPacket = new SDP.MosaicData(
+                            updateData.type === 'image' ? SDP.MosaicTypes.IMAGE :
+                                updateData.type === 'svg' ? SDP.MosaicTypes.SVG : SDP.MosaicTypes.TEXT,
+                            {
+                                value: updateData.value,
+                                content: updateData.text || '',
+                                bindingId: updateData.bindingId
+                            },
+                            {
+                                source: webview.getURL(),
+                                selector: updateData.selector,
+                                isLiveUpdate: true,
+                                bindingId: updateData.bindingId
+                            }
+                        );
+
+                        nodeContext.Mosaic.send(sdpPacket);
+                        statusText.textContent = 'Live update sent!';
+                        setTimeout(() => { statusText.textContent = 'Watching...'; }, 1000);
+
+                    } catch (err) {
+                        console.error('[UrlNode] Failed to process live update:', err);
+                    }
+                }
+            });
+
+            // Handle incoming live updates (for target node)
+            // This is called when we receive data from a source node that's a live update
+            function handleLiveUpdate(data) {
+                if (!data || !data.metadata?.isLiveUpdate) return;
+
+                const bindingId = data.metadata?.bindingId || data.payload?.bindingId;
+                const newValue = data.payload?.content || data.payload?.value || '';
+
+                console.log('[UrlNode] 🎯 TARGET: Received live update for binding:', bindingId, 'value:', newValue.substring(0, 30));
+
+                if (!bindingId) {
+                    console.warn('[UrlNode] Live update without binding ID');
+                    return;
+                }
+
+                // Check if this is a duplicate update (same value as last time)
+                if (injectionRegistry.has(bindingId)) {
+                    const injection = injectionRegistry.get(bindingId);
+                    if (injection.lastValue === newValue) {
+                        console.log('[UrlNode] ⏭️ Skipping duplicate live update - same value');
+                        return;
+                    }
+                }
+
+                // Find matching card in incoming panel BY BINDING ID
+                const cards = incomingCards.querySelectorAll('.data-card');
+                let cardFound = false;
+
+                console.log('[UrlNode] TARGET: Incoming cards count:', cards.length);
+                cards.forEach((card, idx) => {
+                    console.log(`[UrlNode] TARGET: Card ${idx} bindingId:`, card.dataset.bindingId);
+
+                    if (card.dataset.bindingId === bindingId) {
+                        cardFound = true;
+                        console.log('[UrlNode] TARGET: ✅ MATCH FOUND! Updating card...');
+
+                        // Update stored data
+                        card._data = {
+                            ...card._data,
+                            value: data.payload?.value || card._data.value,
+                            text: data.payload?.content || card._data.text
+                        };
+
+                        // Update preview
+                        const preview = card.querySelector('.data-card-preview');
+                        if (preview) {
+                            const type = data.type || card._data.type;
+                            if (type === 'image') {
+                                preview.innerHTML = '<img src="' + (data.payload?.value || card._data.value) + '" style="max-width:100%;max-height:50px;border-radius:3px;">';
+                            } else {
+                                const newText = data.payload?.content?.substring(0, 80) || data.payload?.value?.substring(0, 80) || '[Updated]';
+                                preview.textContent = newText;
+                                console.log('[UrlNode] TARGET: Preview updated to:', newText.substring(0, 30));
+                            }
+                        }
+
+                        // Flash the card to indicate update
+                        card.style.transition = 'box-shadow 0.3s';
+                        card.style.boxShadow = '0 0 10px #2ed573';
+                        setTimeout(() => { card.style.boxShadow = ''; }, 500);
+
+                        statusText.textContent = 'Live update received!';
+                        setTimeout(() => { statusText.textContent = 'Ready'; }, 1500);
+                    }
+                });
+
+                if (!cardFound) {
+                    console.warn('[UrlNode] TARGET: ❌ NO MATCH! Available bindingIds:', Array.from(cards).map(c => c.dataset.bindingId));
+                }
+
+                // DEBUG: Log injection registry state
+                console.log('[UrlNode] 🔍 Checking injection registry for bindingId:', bindingId);
+                console.log('[UrlNode] 🔍 Registry size:', injectionRegistry.size);
+                console.log('[UrlNode] 🔍 Registry keys:', Array.from(injectionRegistry.keys()));
+                console.log('[UrlNode] 🔍 Has this bindingId?', injectionRegistry.has(bindingId));
+
+                // Auto re-inject if this binding was previously injected into DOM
+                if (injectionRegistry.has(bindingId)) {
+                    const injection = injectionRegistry.get(bindingId);
+                    const newValue = data.payload?.content || data.payload?.value || '';
+                    const trackingMethod = injection.trackingMethod || 'selector';
+
+                    console.log('[UrlNode] 🔄 AUTO RE-INJECTING to:', injection.targetSelector, 'method:', trackingMethod, 'value:', newValue.substring(0, 30));
+
+                    // Build re-injection script based on tracking method
+                    let reInjectScript = null;
+                    let useNativeInsert = false;
+
+                    if (trackingMethod === 'marker') {
+                        // MARKER-BASED: Simply update the marker span's content
+                        reInjectScript = `
+                            (function() {
+                                const marker = document.querySelector('${injection.targetSelector}');
+                                const newValue = ${JSON.stringify(newValue)};
+                                
+                                if (!marker) {
+                                    console.warn('[Mosaic] Marker not found for re-injection:', '${injection.targetSelector}');
+                                    return;
+                                }
+                                
+                                // Update marker content
+                                marker.textContent = newValue;
+                                
+                                // Visual feedback
+                                const origBg = marker.style.backgroundColor;
+                                marker.style.backgroundColor = 'rgba(46, 213, 115, 0.3)';
+                                setTimeout(() => { marker.style.backgroundColor = origBg || 'transparent'; }, 500);
+                                
+                                console.log('[Mosaic] ✅ Marker re-injected:', newValue.substring(0, 30));
+                            })();
+                        `;
+                    } else if (trackingMethod === 'range' && injection.rangeData) {
+                        // RANGE-BASED: Replace content at the tracked position
+                        const { startPosition, currentLength } = injection.rangeData;
+                        reInjectScript = `
+                            (function() {
+                                const target = document.querySelector('${injection.targetSelector}');
+                                const newValue = ${JSON.stringify(newValue)};
+                                const startPos = ${startPosition};
+                                const oldLength = ${currentLength};
+                                
+                                if (!target) {
+                                    console.warn('[Mosaic] Target not found for range re-injection:', '${injection.targetSelector}');
+                                    return;
+                                }
+                                
+                                const tagName = target.tagName.toLowerCase();
+                                
+                                if (tagName === 'input' || tagName === 'textarea') {
+                                    const currentVal = target.value;
+                                    
+                                    // Replace the previously injected content
+                                    const before = currentVal.substring(0, startPos);
+                                    const after = currentVal.substring(startPos + oldLength);
+                                    target.value = before + newValue + after;
+                                    
+                                    // Trigger events
+                                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                                    
+                                    // Visual feedback
+                                    const origBg = target.style.backgroundColor;
+                                    target.style.backgroundColor = 'rgba(46, 213, 115, 0.3)';
+                                    setTimeout(() => { target.style.backgroundColor = origBg || ''; }, 500);
+                                    
+                                    console.log('[Mosaic] ✅ Range re-injected at position:', startPos, 'new length:', newValue.length);
+                                    
+                                    // Send updated range data back
+                                    console.log('MOSAIC_RANGE_UPDATED:' + JSON.stringify({
+                                        bindingId: '${bindingId}',
+                                        newLength: newValue.length
+                                    }));
+                                }
+                            })();
+                        `;
+                    } else if (trackingMethod === 'selectAll' || trackingMethod === 'insertText') {
+                        // SELECT-ALL STRATEGY: For iframe targets, select all then replace
+                        // We'll use native insertText after selecting all
+                        useNativeInsert = true;
+                        console.log('[UrlNode] Using selectAll + insertText for re-injection');
+                    } else if (injection.targetSelector) {
+                        // FALLBACK: Original full-replace logic for selector-based
+                        reInjectScript = `
+                            (async function() {
+                                const target = document.querySelector('${injection.targetSelector}');
+                                const newValue = ${JSON.stringify(newValue)};
+                                
+                                if (!target) {
+                                    console.warn('[Mosaic] Target not found for re-injection:', '${injection.targetSelector}');
+                                    return;
+                                }
+                                
+                                target.focus();
+                                const tagName = target.tagName.toLowerCase();
+                                
+                                if (tagName === 'input' || tagName === 'textarea') {
+                                    target.value = newValue;
+                                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                                } else if (target.isContentEditable) {
+                                    target.textContent = newValue;
+                                } else {
+                                    target.textContent = newValue;
+                                }
+                                
+                                // Visual feedback
+                                const origBg = target.style.backgroundColor;
+                                target.style.backgroundColor = 'rgba(46, 213, 115, 0.3)';
+                                setTimeout(() => { target.style.backgroundColor = origBg || ''; }, 500);
+                                
+                                console.log('[Mosaic] ✅ Re-injected value to:', '${injection.targetSelector}');
+                            })();
+                        `;
+                    } else {
+                        // No selector and no native insert - try insertText as last resort
+                        useNativeInsert = true;
+                    }
+
+                    // Execute re-injection
+                    if (useNativeInsert) {
+                        // Check if value actually changed to prevent duplicate updates
+                        if (injection.lastValue === newValue) {
+                            console.log('[UrlNode] ⏭️ Skipping re-injection - same value');
+                            return;
+                        }
+
+                        // ========== FIND-IN-PAGE STRATEGY ==========
+                        // Use webview.findInPage() to locate the old text, then replace it
+                        // This works in complex apps like Google Docs!
+
+                        const oldValue = injection.lastValue;
+
+                        if (oldValue && oldValue.length > 0) {
+                            console.log('[UrlNode] 🔍 Using findInPage strategy to find:', oldValue.substring(0, 30));
+
+                            // Set up one-time listener for find result
+                            const findHandler = async (event) => {
+                                webview.removeEventListener('found-in-page', findHandler);
+
+                                const result = event.result;
+                                console.log('[UrlNode] 🔍 Find result:', result);
+
+                                if (result.matches > 0) {
+                                    // Text found! Stop finding but keep selection
+                                    webview.stopFindInPage('keepSelection');
+
+                                    // Small delay to ensure selection is applied
+                                    await new Promise(r => setTimeout(r, 100));
+
+                                    // Now insert new text - it will replace the selection
+                                    try {
+                                        await webview.insertText(newValue);
+                                        injection.lastValue = newValue;
+                                        console.log('[UrlNode] ✅ FindInPage + Replace successful!');
+                                    } catch (err) {
+                                        console.error('[UrlNode] Insert after find failed:', err);
+                                    }
+                                } else {
+                                    console.warn('[UrlNode] ⚠️ Old text not found, falling back to append');
+                                    webview.stopFindInPage('clearSelection');
+
+                                    // Fallback: just insert at current position
+                                    try {
+                                        await webview.insertText(newValue);
+                                        injection.lastValue = newValue;
+                                    } catch (err) {
+                                        console.error('[UrlNode] Fallback insert failed:', err);
+                                    }
+                                }
+                            };
+
+                            webview.addEventListener('found-in-page', findHandler);
+
+                            // Start the search (case-sensitive, find first occurrence)
+                            webview.findInPage(oldValue, {
+                                forward: true,
+                                findNext: false,
+                                matchCase: true
+                            });
+                        } else {
+                            // No lastValue - this is first injection or value was empty
+                            console.log('[UrlNode] No lastValue, using simple insertText');
+                            (async () => {
+                                try {
+                                    await webview.insertText(newValue);
+                                    injection.lastValue = newValue;
+                                    console.log('[UrlNode] ✅ Simple insertText successful');
+                                } catch (err) {
+                                    console.error('[UrlNode] Simple insertText failed:', err);
+                                }
+                            })();
+                        }
+                    } else if (reInjectScript) {
+                        webview.executeJavaScript(reInjectScript).then(() => {
+                            console.log('[UrlNode] ✅ Re-injection successful');
+                            injection.lastValue = newValue;
+                        }).catch(err => {
+                            console.error('[UrlNode] Re-injection failed:', err);
+                        });
+                    }
+                }
+            }
+
+            function handleDataReceived(data) {
+                if (!data) return;
+
+                logger.info('Extracted:', data);
+                statusText.textContent = `Selected: ${data.selector} (${data.type})`;
+                selectedSelector = data.selector;
+
+                // Add to outgoing panel
+                const card = createDataCard(data, outgoingCards, webview.getURL());
+
+                // Generate binding ID and start watching for live updates
+                const bindingId = 'binding-' + (++bindingIdCounter) + '-' + Date.now();
+                if (card) {
+                    card.dataset.bindingId = bindingId;
+                    data.bindingId = bindingId;
+                }
+                startWatching(data.selector, bindingId);
+                bindings.set(bindingId, { sourceSelector: data.selector, data: data });
+
+                // Send to Mosaic System (Explicit SDP Construction)
+                // Use global SDP explicitly if needed, but it should be in scope
+                const sdpPacket = new SDP.MosaicData(
+                    // Map webview types to SDP types
+                    data.type === 'image' ? SDP.MosaicTypes.IMAGE :
+                        data.type === 'svg' ? SDP.MosaicTypes.SVG :
+                            data.type === 'url' ? SDP.MosaicTypes.URL : SDP.MosaicTypes.TEXT,
+
+                    // Payload
+                    {
+                        value: data.value,
+                        content: data.text || '',
+                        width: data.width,
+                        height: data.height,
+                        bindingId: bindingId
+                    },
+
+                    // Metadata
+                    {
+                        source: webview.getURL(),
+                        selector: data.selector,
+                        originalType: data.type,
+                        bindingId: bindingId
+                    }
+                );
+
+                nodeContext.Mosaic.send(sdpPacket);
+
+                // Persist selection
+                nodeContext.Mosaic.saveData({
+                    content: webview.getURL(),
+                    selector: selectedSelector
+                });
+            }
+
+            function updateWatchButton() {
+                if (isWatching) {
+                    watchBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Stop';
+                    watchBtn.style.background = '#e74c3c';
+                } else {
+                    watchBtn.innerHTML = '<i class="fas fa-eye"></i> Watch';
+                    watchBtn.style.background = '';
+                }
+            }
+
+            // ========== Watch Logic ==========
+            watchBtn.addEventListener('click', async () => {
+                // ... (existing logic) ...
+                if (!selectedSelector) {
+                    statusText.textContent = 'Select an element first!';
+                    return;
+                }
+
+                // Toggle
+                if (isWatching) {
+                    // Stop
+                    webview.send('stop-observe');
+                    isWatching = false;
+                    statusText.textContent = 'Stopped watching';
+                } else {
+                    // Start
+                    if (selectedSelector) {
+                        webview.send('start-observe', selectedSelector);
+                        isWatching = true;
+                        statusText.textContent = 'Watching (Live)...';
+                    }
+                }
+                updateWatchButton();
+            });
+
+            // Listen for Updates
+            webview.addEventListener('ipc-message', (event) => {
+                if (event.channel === 'element-update') {
+                    const data = event.args[0];
+                    logger.info('[UrlNode] Received Live Update:', data);
+                    // Flash status
+                    statusText.textContent = 'Updated: ' + (data.text ? data.text.substring(0, 15) + '...' : 'Content');
+
+                    // Send to Mosaic System
+                    const sdpPacket = new SDP.MosaicData(
+                        data.type === 'image' ? SDP.MosaicTypes.IMAGE :
+                            data.type === 'url' ? SDP.MosaicTypes.URL : SDP.MosaicTypes.TEXT,
+                        {
+                            value: data.value,
+                            content: data.text || '',
+                            width: data.width,
+                            height: data.height
+                        },
+                        {
+                            source: webview.getURL(),
+                            selector: selectedSelector,
+                            originalType: data.type,
+                            isLiveUpdate: true
+                        }
+                    );
+
+                    nodeContext.Mosaic.send(sdpPacket);
+
+                    setTimeout(() => {
+                        if (isWatching) statusText.textContent = 'Watching (Live)...';
+                    }, 1000);
+                }
+                // ... other channels (element-content, etc.) handled in other listeners or we can combine
+            });
+
+            // ========== Eject Logic ==========
+            // Store selected data for ejection
+            let lastSelectedData = null;
+
+            // Hook into handleDataReceived to cache the data
+            const originalHandleDataReceived = handleDataReceived;
+            handleDataReceived = function (data) {
+                lastSelectedData = data;
+                originalHandleDataReceived(data);
+            };
+
+            // Listen for eject data via console
+            webview.addEventListener('console-message', (e) => {
+                if (e.message.startsWith('MOSAIC_EJECT_DATA:')) {
+                    try {
+                        const jsonStr = e.message.substring('MOSAIC_EJECT_DATA:'.length);
+                        const data = JSON.parse(jsonStr);
+                        performEjection(data);
+                    } catch (err) {
+                        console.error('[UrlNode] Failed to parse eject data:', err);
+                    }
+                }
+            });
+
+            function performEjection(data) {
+                if (!data) {
+                    statusText.textContent = 'No data to eject!';
+                    return;
+                }
+
+                logger.info('[UrlNode] Performing ejection with data:', data);
+
+                // Create SDP Packet with Intent to Spawn
+                const packet = new SDP.MosaicData(
+                    data.type === 'image' ? SDP.MosaicTypes.IMAGE :
+                        data.type === 'svg' ? SDP.MosaicTypes.SVG :
+                            data.type === 'url' ? SDP.MosaicTypes.URL : SDP.MosaicTypes.TEXT,
+                    {
+                        value: data.value,
+                        text: data.text,
+                        html: data.html,
+                        selector: data.selector,
+                        width: data.width,
+                        height: data.height
+                    },
+                    {
+                        source: webview.getURL(),
+                        sourceNodeId: mosaicInstance.getNodeId(),
+                        intent: 'spawn_node',
+                        description: 'Ejected: ' + (data.text?.substring(0, 30) || data.tagName)
+                    }
+                );
+
+                nodeContext.Mosaic.send(packet);
+                statusText.textContent = 'Ejected to connected nodes!';
+            }
+
+            ejectBtn.addEventListener('click', () => {
+                if (!selectedSelector) {
+                    statusText.textContent = 'Select content to eject first!';
+                    return;
+                }
+
+                logger.info('[UrlNode] Ejecting data for selector:', selectedSelector);
+                statusText.textContent = 'Ejecting...';
+
+                // If we have cached data, use it directly
+                if (lastSelectedData && lastSelectedData.selector === selectedSelector) {
+                    performEjection(lastSelectedData);
+                } else {
+                    // Otherwise, re-fetch the data using executeJavaScript
+                    const fetchScript = `
+                        (function() {
+                            const el = document.querySelector('${selectedSelector.replace(/'/g, "\\'")}');
+                            if (!el) { console.log('MOSAIC_EJECT_DATA:null'); return; }
+                            
+                            const tagName = el.tagName.toLowerCase();
+                            const rect = el.getBoundingClientRect();
+                            const data = {
+                                selector: '${selectedSelector.replace(/'/g, "\\'")}',
+                                tagName: tagName,
+                                width: rect.width,
+                                height: rect.height,
+                                text: el.innerText?.trim().substring(0, 1000) || '',
+                                html: el.outerHTML?.substring(0, 5000) || '',
+                                type: 'html',
+                                value: el.outerHTML
+                            };
+                            if (tagName === 'img') { data.type = 'image'; data.value = el.src; }
+                            else if (tagName === 'svg') { data.type = 'svg'; data.value = el.outerHTML; }
+                            else if (tagName === 'a') { data.type = 'url'; data.value = el.href; }
+                            
+                            console.log('MOSAIC_EJECT_DATA:' + JSON.stringify(data));
+                        })();
+                    `;
+
+                    webview.executeJavaScript(fetchScript).catch(err => {
+                        console.error('[UrlNode] Failed to fetch eject data:', err);
+                        statusText.textContent = 'Eject error: ' + err.message;
+                    });
+                }
+            });
+
+            // ========== Test Helper ==========
+            window.testExtraction = function () {
+                logger.info('[UrlNode] Simulating extraction...');
+                const dummyData = {
+                    type: 'text',
+                    text: 'Hello Mosaic World',
+                    value: 'Hello Mosaic World',
+                    selector: 'body > h1',
+                    width: 100,
+                    height: 20
+                };
+                handleDataReceived(dummyData);
+                return 'Simulated extraction of: ' + dummyData.text;
+            };
+
+            // ========== Mosaic Lifecycle ==========
+
+            // ========== Mosaic Lifecycle ==========
+
+            nodeContext.Mosaic.onDataLoaded = (data) => {
+                // Restore URL
+                if (data.content && data.content !== 'about:blank') {
+                    logger.info('[Mosaic] Restoring URL:', data.content);
+                    loadUrl(data.content);
+                }
+
+                // Restore Selector
+                if (data.selector) {
+                    selectedSelector = data.selector;
+                }
+            };
+
+            // ========== INCOMING DATA HANDLER ==========
+            // When connected nodes send data, it appears in the incoming panel
+            mosaicInstance.inputCallback = (data, sourceId) => {
+                logger.info('[UrlNode] Received input from:', sourceId, data);
+
+                // Check if this is a DELETE notification
+                if (data?.metadata?.isDelete) {
+                    const bindingId = data?.metadata?.bindingId || data?.payload?.bindingId;
+                    logger.info('[UrlNode] Received delete notification for binding:', bindingId);
+
+                    if (bindingId) {
+                        // Find and remove the card with this binding ID
+                        const cards = incomingCards.querySelectorAll('.data-card');
+                        cards.forEach(card => {
+                            if (card.dataset.bindingId === bindingId) {
+                                card.remove();
+                                statusText.textContent = 'Card removed by source';
+                                setTimeout(() => { statusText.textContent = 'Ready'; }, 1500);
+                            }
+                        });
+
+                        // Restore empty state if no cards left
+                        if (incomingCards.querySelectorAll('.data-card').length === 0) {
+                            const emptyDiv = window.document.createElement('div');
+                            emptyDiv.className = 'panel-empty';
+                            emptyDiv.innerHTML = '<i class="fas fa-plug"></i> Connect a node to receive data';
+                            incomingCards.appendChild(emptyDiv);
+                        }
+                    }
+                    return;
+                }
+
+                // Check if this is a live update
+                if (data?.metadata?.isLiveUpdate) {
+                    handleLiveUpdate(data);
+                    return;
+                }
+
+                // Parse SDP packet if it's wrapped
+                let payload = data;
+                if (data && data.payload) {
+                    payload = data.payload;
+                }
+
+                // Create card in incoming panel
+                const sourceInfo = data?.metadata?.source || sourceId || 'Unknown';
+
+                // Construct a card-compatible data object
+                const cardData = {
+                    type: data?.type || payload?.type || 'text',
+                    value: payload?.value || payload?.content || (typeof payload === 'string' ? payload : ''),
+                    text: payload?.text || payload?.content || (typeof payload === 'string' ? payload : ''),
+                    selector: payload?.selector || data?.metadata?.selector || '',
+                    tagName: payload?.tagName || '',
+                    sourceNodeId: sourceId,
+                    bindingId: payload?.bindingId || data?.metadata?.bindingId || ''
+                };
+
+                // VALIDATION: Skip creating card if no actual content
+                if (!cardData.value && !cardData.text && !cardData.selector) {
+                    console.log('[UrlNode] Skipping empty data - no content to display');
+                    return;
+                }
+
+                // Also skip if this is just JSON.stringify of undefined/null
+                if (cardData.value === 'undefined' || cardData.value === 'null' || cardData.value === '{}') {
+                    console.log('[UrlNode] Skipping invalid data:', cardData.value);
+                    return;
+                }
+
+                // DUPLICATE PREVENTION: Check if card with same bindingId exists
+                if (cardData.bindingId) {
+                    const existingCards = incomingCards.querySelectorAll('.data-card');
+                    let existingCard = null;
+                    existingCards.forEach(c => {
+                        if (c.dataset.bindingId === cardData.bindingId) {
+                            existingCard = c;
+                        }
+                    });
+
+                    if (existingCard) {
+                        console.log('[UrlNode] 🔄 Card with bindingId already exists, updating instead of creating:', cardData.bindingId);
+                        // Update existing card instead of creating duplicate
+                        existingCard._data = { ...existingCard._data, ...cardData };
+                        const preview = existingCard.querySelector('.data-card-preview');
+                        if (preview) {
+                            preview.textContent = cardData.text?.substring(0, 80) || cardData.value?.substring(0, 80) || '[Updated]';
+                        }
+                        // Flash to indicate update
+                        existingCard.style.boxShadow = '0 0 10px #f39c12';
+                        setTimeout(() => { existingCard.style.boxShadow = ''; }, 500);
+                        return;
+                    }
+                }
+
+                const card = createDataCard(cardData, incomingCards, sourceInfo);
+                if (card && cardData.bindingId) {
+                    card.dataset.bindingId = cardData.bindingId;
+                }
+                statusText.textContent = 'Received data from: ' + sourceInfo.substring(0, 20);
+            };
+
+            // Listen for Observer Updates from Main Process
+            if (globalThis.electronAPI && globalThis.electronAPI.onObserverUpdate) {
+                globalThis.electronAPI.onObserverUpdate(({ nodeId, data }) => {
+                    if (nodeId === mosaicInstance.getNodeId()) {
+                        statusText.textContent = `Update: ${data.value.substring(0, 20)}...`;
+                        nodeContext.Mosaic.send({
+                            type: data.type,
+                            value: data.value,
+                            selector: selectedSelector
+                        });
+                    }
+                });
+            }
+
+            return {
+                loadData: nodeContext.Mosaic.onDataLoaded
+            };
+        };
+    </script>
+</body>
+
+</html>

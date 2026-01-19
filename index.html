@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic - Interactive Mindmap</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/node-system.css"> <!-- NEW NODE SYSTEM STYLES -->
+    <link rel="stylesheet" href="css/node-type-overrides.css"> <!-- NODE TYPE SPECIFIC OVERRIDES -->
+    <link rel="stylesheet" href="css/focus-mode.css"> <!-- FOCUS MODE STYLES -->
+    <link rel="stylesheet" href="css/custom-titlebar.css"> <!-- CUSTOM TITLE BAR -->
+    <link rel="stylesheet" href="css/dashboard.css"> <!-- DASHBOARD STYLES -->
+    <link rel="stylesheet" href="css/unified-bar.css"> <!-- UNIFIED BAR STYLES -->
+    <link rel="stylesheet" href="css/signin.css"> <!-- SIGN IN STYLES -->
+    <link rel="stylesheet" href="css/signup.css"> <!-- SIGN UP STYLES -->
+    <link rel="stylesheet" href="css/user-settings.css"> <!-- USER SETTINGS STYLES -->
+    <link rel="stylesheet" href="css/cursor-sync.css"> <!-- CURSOR SYNC STYLES -->
+    <!-- html2canvas for PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="css/chat.css"> <!-- CHAT STYLES -->
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Cropper.js for Avatar Cropping -->
+    <link rel="stylesheet" href="node_modules/cropperjs/dist/cropper.css">
+    <script src="node_modules/cropperjs/dist/cropper.js"></script>
+</head>
+
+<body>
+    <!-- Sign In Screen -->
+    <div id="signin-screen" class="signin-screen" style="display: none;">
+        <!-- Left Side - Form -->
+        <div class="signin-left">
+            <div class="signin-logo">
+                <img src="images/icon.png" alt="Mosaic">
+                <span>Mosaic</span>
+            </div>
+
+            <div class="signin-form-container">
+                <h1 class="signin-title">Welcome back</h1>
+                <p class="signin-subtitle">Sign in to access your projects</p>
+
+                <div id="signin-error" class="signin-error"></div>
+
+                <form id="signin-form" class="signin-form">
+                    <div class="signin-input-group">
+                        <label class="signin-label">Email</label>
+                        <input type="email" id="signin-email" class="signin-input" placeholder="you@example.com"
+                            required>
+                    </div>
+
+                    <div class="signin-input-group">
+                        <label class="signin-label">Password</label>
+                        <input type="password" id="signin-password" class="signin-input" placeholder="••••••••"
+                            required>
+                    </div>
+
+                    <button type="submit" id="signin-submit" class="signin-btn signin-btn-primary">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="signin-divider">or continue with</div>
+
+                <div class="signin-oauth-row">
+                    <button id="signin-google" class="signin-btn signin-btn-oauth signin-btn-google">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </button>
+
+                    <button id="signin-github" class="signin-btn signin-btn-oauth signin-btn-github">
+                        <i class="fab fa-github"></i>
+                        GitHub
+                    </button>
+                </div>
+
+                <p class="signin-footer">
+                    Don't have an account? <a href="#" id="signin-signup-link">Sign up</a>
+                </p>
+            </div>
+
+            <div id="signin-skip" class="signin-skip">
+                <i class="fas fa-arrow-right"></i> Continue without account
+            </div>
+        </div>
+
+        <!-- Right Side - Video -->
+        <div class="signin-right">
+            <video autoplay muted loop playsinline>
+                <source src="images/bg-pattern.mp4" type="video/mp4">
+            </video>
+            <div class="signin-right-overlay"></div>
+        </div>
+    </div>
+
+    <!-- Sign Up Wizard (Multi-Step) -->
+    <div id="signup-screen" class="signup-screen hidden">
+        <!-- Left Side - Form -->
+        <div class="signup-left">
+            <div class="signup-header">
+                <button id="signup-back" class="signup-back">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="signup-logo">
+                    <img src="images/icon.png" alt="Mosaic">
+                    <span>Mosaic</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="signup-progress">
+                <div class="signup-progress-step active"></div>
+                <div class="signup-progress-step"></div>
+                <div class="signup-progress-step"></div>
+                <div class="signup-progress-step"></div>
+                <div class="signup-progress-step"></div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="signup-error" class="signup-error"></div>
+
+            <!-- Steps Container -->
+            <div class="signup-steps-container">
+
+                <!-- Step 1: Basics (Name) -->
+                <div id="step-basics" class="signup-step active">
+                    <h2 class="signup-step-title">Hello! 👋</h2>
+                    <p class="signup-step-subtitle">Let's get to know you.</p>
+
+                    <div class="signup-step-content">
+                        <div class="signup-input-group">
+                            <label class="signup-label">Full Name</label>
+                            <input type="text" id="signup-fullname" class="signup-input" placeholder="Your full name"
+                                autofocus>
+                        </div>
+                    </div>
+
+                    <div class="signup-step-nav">
+                        <button type="button" class="signup-btn signup-btn-primary signup-btn-next">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <p class="signup-footer">
+                        Already have an account? <a href="#" id="signup-signin-link">Sign In</a>
+                    </p>
+                </div>
+
+                <!-- Step 2: Credentials (Email & Password) -->
+                <div id="step-credentials" class="signup-step">
+                    <h2 class="signup-step-title">Account Details</h2>
+                    <p class="signup-step-subtitle">Create your email and password to sign in.</p>
+
+                    <div class="signup-step-content">
+                        <div class="signup-input-group">
+                            <label class="signup-label">Email</label>
+                            <input type="email" id="signup-email" class="signup-input" placeholder="you@example.com">
+                        </div>
+                        <div class="signup-input-group">
+                            <label class="signup-label">Password</label>
+                            <input type="password" id="signup-password" class="signup-input"
+                                placeholder="At least 6 characters">
+                        </div>
+                    </div>
+
+                    <div class="signup-step-nav">
+                        <button type="button" class="signup-btn signup-btn-secondary signup-btn-prev">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="signup-btn signup-btn-primary signup-btn-next">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Profession -->
+                <div id="step-profession" class="signup-step">
+                    <h2 class="signup-step-title">What Do You Do?</h2>
+                    <p class="signup-step-subtitle">We want to provide the best experience for you.</p>
+
+                    <div class="signup-step-content">
+                        <div class="signup-option-grid">
+                            <div class="signup-option" data-value="developer">
+                                <i class="fas fa-code"></i>
+                                <span>Developer</span>
+                            </div>
+                            <div class="signup-option" data-value="designer">
+                                <i class="fas fa-palette"></i>
+                                <span>Designer</span>
+                            </div>
+                            <div class="signup-option" data-value="engineer">
+                                <i class="fas fa-cogs"></i>
+                                <span>Engineer</span>
+                            </div>
+                            <div class="signup-option" data-value="academic">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Academic</span>
+                            </div>
+                            <div class="signup-option" data-value="journalist">
+                                <i class="fas fa-newspaper"></i>
+                                <span>Journalist</span>
+                            </div>
+                            <div class="signup-option" data-value="student">
+                                <i class="fas fa-book"></i>
+                                <span>Student</span>
+                            </div>
+                            <div class="signup-option" data-value="researcher">
+                                <i class="fas fa-microscope"></i>
+                                <span>Researcher</span>
+                            </div>
+                            <div class="signup-option" data-value="lawyer">
+                                <i class="fas fa-balance-scale"></i>
+                                <span>Lawyer</span>
+                            </div>
+                            <div class="signup-option" data-value="other">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>Other</span>
+                            </div>
+                        </div>
+
+                        <div id="signup-profession-other" class="signup-other-input">
+                            <input type="text" id="signup-profession-other-input" class="signup-input"
+                                placeholder="Enter your profession...">
+                        </div>
+                    </div>
+
+                    <div class="signup-step-nav">
+                        <button type="button" class="signup-btn signup-btn-secondary signup-btn-prev">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="signup-btn signup-btn-primary signup-btn-next">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Referral -->
+                <div id="step-referral" class="signup-step">
+                    <h2 class="signup-step-title">How Did You Hear About Us?</h2>
+                    <p class="signup-step-subtitle">This helps us grow.</p>
+
+                    <div class="signup-step-content">
+                        <div class="signup-option-grid two-cols">
+                            <div class="signup-option" data-value="colleague">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Colleague</span>
+                            </div>
+                            <div class="signup-option" data-value="google">
+                                <i class="fab fa-google"></i>
+                                <span>Google</span>
+                            </div>
+                            <div class="signup-option" data-value="youtube">
+                                <i class="fab fa-youtube"></i>
+                                <span>YouTube</span>
+                            </div>
+                            <div class="signup-option" data-value="social">
+                                <i class="fas fa-share-alt"></i>
+                                <span>Social Media</span>
+                            </div>
+                            <div class="signup-option" data-value="email">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signup-step-nav">
+                        <button type="button" class="signup-btn signup-btn-secondary signup-btn-prev">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="signup-btn signup-btn-primary signup-btn-next">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Purpose -->
+                <div id="step-purpose" class="signup-step">
+                    <h2 class="signup-step-title">What Will You Use It For?</h2>
+                    <p class="signup-step-subtitle">You can select multiple options.</p>
+
+                    <div class="signup-step-content">
+                        <div class="signup-option-grid two-cols">
+                            <div class="signup-option" data-value="automation">
+                                <i class="fas fa-robot"></i>
+                                <span>Automations</span>
+                            </div>
+                            <div class="signup-option" data-value="visual_programming">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>Visual Programming</span>
+                            </div>
+                            <div class="signup-option" data-value="campaign">
+                                <i class="fas fa-bullhorn"></i>
+                                <span>Campaign Management</span>
+                            </div>
+                            <div class="signup-option" data-value="research">
+                                <i class="fas fa-search"></i>
+                                <span>Deep Research</span>
+                            </div>
+                            <div class="signup-option" data-value="homework">
+                                <i class="fas fa-tasks"></i>
+                                <span>Homework</span>
+                            </div>
+                            <div class="signup-option" data-value="collaboration">
+                                <i class="fas fa-users"></i>
+                                <span>Collaboration</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signup-step-nav">
+                        <button type="button" class="signup-btn signup-btn-secondary signup-btn-prev">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="signup-btn signup-btn-primary signup-btn-next">
+                            Create Account <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div class="signup-success" style="display: none;">
+                <div class="signup-success-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h2>Check Your Email</h2>
+                <p>
+                    We've sent a verification link to <span class="signup-success-email"></span>.
+                    Click the link to activate your account.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Side - Visuals (one per step) -->
+        <div class="signup-right">
+            <!-- Step 1 Visual -->
+            <div class="signup-visual active" data-step="0">
+                <video autoplay muted loop playsinline>
+                    <source src="images/bg-pattern.mp4" type="video/mp4">
+                </video>
+            </div>
+            <!-- Step 2 Visual (placeholder until user provides) -->
+            <div class="signup-visual" data-step="1">
+                <video autoplay muted loop playsinline>
+                    <source src="images/bg-pattern.mp4" type="video/mp4">
+                </video>
+            </div>
+            <!-- Step 3 Visual -->
+            <div class="signup-visual" data-step="2">
+                <video autoplay muted loop playsinline>
+                    <source src="images/bg-pattern.mp4" type="video/mp4">
+                </video>
+            </div>
+            <!-- Step 4 Visual -->
+            <div class="signup-visual" data-step="3">
+                <video autoplay muted loop playsinline>
+                    <source src="images/bg-pattern.mp4" type="video/mp4">
+                </video>
+            </div>
+            <!-- Step 5 Visual -->
+            <div class="signup-visual" data-step="4">
+                <video autoplay muted loop playsinline>
+                    <source src="images/bg-pattern.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Title Bar for Frameless Window -->
+    <div id="custom-titlebar" class="custom-titlebar">
+        <div class="titlebar-left">
+            <button id="home-btn" class="titlebar-btn titlebar-btn-spaced" title="Home">
+                <i class="fas fa-home"></i>
+            </button>
+            <button id="sidebar-toggle" class="titlebar-btn" title="Toggle Sidebar">
+                <i class="fas fa-columns"></i>
+            </button>
+
+            <!-- Objects Panel (after sidebar toggle, before search center) -->
+            <div id="titlebar-objects" class="titlebar-objects" style="display: none;">
+                <button class="t-obj-nav-btn prev" title="Previous Object"><i class="fas fa-chevron-left"></i></button>
+                <div class="t-obj-main" title="Open Object List">
+                    <i class="fas fa-layer-group t-obj-icon"></i>
+                    <span class="t-obj-label">Objects</span>
+                    <i class="fas fa-chevron-down t-obj-chevron"></i>
+                </div>
+                <button class="t-obj-nav-btn next" title="Next Object"><i class="fas fa-chevron-right"></i></button>
+
+                <!-- Dropdown (Initially Hidden) -->
+                <div id="titlebar-objects-list" class="titlebar-objects-dropdown">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+        <div class="titlebar-center">
+            <!-- Search Bar (replaces Open Projects dropdown) -->
+            <div id="titlebar-search" class="titlebar-search">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="titlebar-search-input" placeholder="Search a node or a web site..." />
+                <span class="search-shortcut">⇧A</span>
+            </div>
+        </div>
+        <div class="titlebar-right">
+            <!-- Contributor Avatars -->
+            <div id="collaborator-avatars" class="collaborator-avatars">
+                <!-- Dynamically populated with online contributor avatars -->
+            </div>
+
+            <!-- Share Button with Dropdown -->
+            <div class="share-dropdown-wrapper">
+                <button id="share-btn" class="share-btn">
+                    <span>Share</span>
+                </button>
+                <div id="share-dropdown" class="share-dropdown">
+                    <!-- Dropdown content populated by JS -->
+                </div>
+            </div>
+
+            <!-- Chat Button -->
+            <button id="chat-btn" class="titlebar-btn" title="Team Chat">
+                <i class="fas fa-comment-dots"></i>
+                <span id="chat-badge" class="notif-badge" style="display: none;">0</span>
+            </button>
+
+            <button id="notifications-btn" class="titlebar-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
+            </button>
+            <button id="settings-btn" class="titlebar-btn" title="Settings">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Sidebar (Independent - works on both dashboard and canvas) -->
+    <div class="main-sidebar" id="main-sidebar">
+        <!-- User Info (clickable to open settings panel) -->
+        <div class="dashboard-user" id="dashboard-user-section"
+            onclick="window.showSettingsPanel && window.showSettingsPanel()" style="cursor: pointer;">
+            <div class="dashboard-user-avatar">M</div>
+            <div class="dashboard-user-info">
+                <div class="dashboard-user-name">Mosaic User</div>
+                <div class="dashboard-user-status" id="user-status-text">Offline</div>
+            </div>
+        </div>
+
+        <!-- Current Project -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Current Project</div>
+            <div id="sidebar-current-projects" class="sidebar-projects-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Recent Projects</div>
+            <div id="sidebar-recent-projects" class="sidebar-projects-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Main Menu</div>
+            <div class="dashboard-nav">
+                <div class="dashboard-nav-item active" data-section="dashboard">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </div>
+                <div class="dashboard-nav-item" data-section="templates">
+                    <i class="fas fa-grip-horizontal"></i> Templates
+                </div>
+                <div class="dashboard-nav-item" data-section="projects">
+                    <i class="fas fa-folder"></i> All Projects
+                </div>
+                <div class="dashboard-nav-item" data-section="trash">
+                    <i class="fas fa-trash"></i> Recycle Bin
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-section sidebar-actions-section">
+            <div class="sidebar-section-title">Actions</div>
+            <div class="sidebar-action-buttons">
+                <button class="sidebar-action-btn" data-action="new">
+                    <i class="fas fa-plus"></i> New Mosaic
+                </button>
+                <button class="sidebar-action-btn" data-action="open">
+                    <i class="fas fa-folder-open"></i> Open from Disk
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard View (Main Content Area) -->
+    <div id="dashboard-view" class="dashboard-view">
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Dashboard Home Section -->
+            <div class="dashboard-section-content" data-section="dashboard">
+                <div class="dashboard-header">
+                    <span class="dashboard-badge">Workspace v3.0</span>
+                    <h1 class="dashboard-greeting">Good Evening<span class="highlight">.</span></h1>
+                    <h1 class="dashboard-subtitle">System Ready.</h1>
+
+                    <div class="dashboard-actions">
+                        <button class="dashboard-action-btn primary" data-action="new-canvas">
+                            <i class="fas fa-plus"></i> Initialize Canvas
+                        </button>
+                        <button class="dashboard-action-btn secondary" data-action="import">
+                            <i class="fas fa-upload"></i> Import Data
+                        </button>
+                        <button class="dashboard-action-btn secondary" data-action="join">
+                            <i class="fas fa-link"></i> Join Project
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Templates Section (Preview) -->
+                <div class="dashboard-section">
+                    <div class="dashboard-section-header">
+                        <span class="dashboard-section-title">Templates</span>
+                        <a class="dashboard-view-all" data-goto-section="templates">View All →</a>
+                    </div>
+                    <div class="dashboard-templates-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Recent Projects Section (Preview) -->
+                <div class="dashboard-section">
+                    <div class="dashboard-section-header">
+                        <span class="dashboard-section-title">Recent Projects</span>
+                        <div class="dashboard-projects-header">
+                            <a class="dashboard-view-all" data-goto-section="projects">View All →</a>
+                            <div class="dashboard-view-toggle">
+                                <button class="active" title="Grid View"><i class="fas fa-th"></i></button>
+                                <button title="List View"><i class="fas fa-list"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-projects-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Full View -->
+            <div class="dashboard-section-content hidden" data-section="templates">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-greeting">Templates<span class="highlight">.</span></h1>
+                    <h1 class="dashboard-subtitle">Start with a pre-built workflow.</h1>
+                </div>
+                <div id="templates-categories-container">
+                    <!-- Categories will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- All Projects View -->
+            <div class="dashboard-section-content hidden" data-section="projects">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-greeting">All Projects<span class="highlight">.</span></h1>
+                    <h1 class="dashboard-subtitle">Your saved work.</h1>
+                </div>
+
+                <!-- Local Projects -->
+                <div class="dashboard-section" id="local-projects-section">
+                    <div class="dashboard-section-header">
+                        <span class="dashboard-section-title"><i class="fas fa-file-alt"></i> Local Projects</span>
+                    </div>
+                    <div id="local-projects-grid" class="dashboard-projects-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Cloud Projects -->
+                <div class="dashboard-section" id="cloud-projects-section">
+                    <div class="dashboard-section-header">
+                        <span class="dashboard-section-title"><i class="fas fa-cloud"></i> Cloud Projects</span>
+                    </div>
+                    <div id="cloud-projects-grid" class="dashboard-projects-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Shared With Me -->
+                <div class="dashboard-section" id="shared-projects-section">
+                    <div class="dashboard-section-header">
+                        <span class="dashboard-section-title"><i class="fas fa-link"></i> Shared With Me</span>
+                    </div>
+                    <div id="shared-projects-grid" class="dashboard-projects-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trash View -->
+            <div class="dashboard-section-content hidden" data-section="trash">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-greeting">Recycle Bin<span class="highlight">.</span></h1>
+                    <h1 class="dashboard-subtitle">Deleted items.</h1>
+                </div>
+                <div class="dashboard-empty">
+                    <i class="fas fa-trash-alt"></i>
+                    <p>Recycle bin is empty</p>
+                </div>
+            </div>
+
+            <!-- Account Settings View -->
+            <div class="dashboard-section-content hidden" data-section="settings">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-greeting">Account Settings<span class="highlight">.</span></h1>
+                    <h1 class="dashboard-subtitle">Manage your profile and preferences.</h1>
+                </div>
+
+                <div class="settings-panel" id="settings-panel">
+                    <!-- Message -->
+                    <div id="settings-message" class="user-settings-message"></div>
+
+                    <div class="settings-grid">
+                        <!-- Left Column: Profile -->
+                        <div class="settings-column">
+                            <!-- Profile Photo -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">Profile Photo</div>
+                                <div class="settings-avatar-section">
+                                    <div id="settings-avatar" class="settings-avatar">M</div>
+                                    <div class="settings-avatar-actions">
+                                        <button id="settings-avatar-upload" class="settings-avatar-btn">
+                                            <i class="fas fa-upload"></i> Upload Photo
+                                        </button>
+                                        <button id="settings-avatar-delete" class="settings-avatar-btn delete">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Information -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">User Information</div>
+                                <div class="settings-field">
+                                    <label class="settings-label">Full Name</label>
+                                    <input type="text" id="settings-fullname" class="settings-input"
+                                        placeholder="Your full name">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-label">Email Address</label>
+                                    <input type="email" id="settings-email" class="settings-input"
+                                        placeholder="you@example.com">
+                                    <div class="settings-email-notice">A confirmation email will be sent for email
+                                        changes.</div>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-label">Profession</label>
+                                    <select id="settings-profession" class="settings-select">
+                                        <option value="">Select</option>
+                                        <option value="developer">Developer</option>
+                                        <option value="designer">Designer</option>
+                                        <option value="engineer">Engineer</option>
+                                        <option value="academic">Academic</option>
+                                        <option value="journalist">Journalist</option>
+                                        <option value="student">Student</option>
+                                        <option value="researcher">Researcher</option>
+                                        <option value="lawyer">Lawyer</option>
+                                        <option value="musician">Musician</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Online Status -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">Online Status</div>
+                                <div class="settings-field">
+                                    <div class="settings-toggle-row">
+                                        <div class="settings-toggle-info">
+                                            <span class="settings-toggle-label">Appear Online</span>
+                                            <span class="settings-toggle-desc">Others can see when you're active</span>
+                                        </div>
+                                        <label class="settings-toggle">
+                                            <input type="checkbox" id="settings-online-toggle" checked>
+                                            <span class="settings-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Plan & Stats -->
+                        <div class="settings-column">
+                            <!-- Plan -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">Subscription Plan</div>
+                                <div class="settings-plan">
+                                    <div class="settings-plan-info">
+                                        <span id="settings-plan-badge" class="settings-plan-badge free">FREE</span>
+                                        <span id="settings-plan-name" class="settings-plan-name">Free Plan</span>
+                                    </div>
+                                    <button id="settings-upgrade-btn" class="settings-upgrade-btn">
+                                        <i class="fas fa-arrow-up"></i> Upgrade
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Storage -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">Storage</div>
+                                <div class="settings-storage">
+                                    <div class="settings-storage-header">
+                                        <span class="settings-storage-label">Used Space</span>
+                                        <span id="settings-storage-value" class="settings-storage-value">0 B / 100
+                                            MB</span>
+                                    </div>
+                                    <div class="settings-storage-bar">
+                                        <div id="settings-storage-fill" class="settings-storage-fill" style="width: 0%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Statistics -->
+                            <div class="settings-card">
+                                <div class="settings-card-title">Statistics</div>
+                                <div class="settings-stats">
+                                    <div class="settings-stat">
+                                        <div id="settings-stat-projects" class="settings-stat-value">0</div>
+                                        <div class="settings-stat-label">Projects</div>
+                                    </div>
+                                    <div class="settings-stat">
+                                        <div id="settings-stat-shared" class="settings-stat-value">0</div>
+                                        <div class="settings-stat-label">Shared</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="settings-actions">
+                        <button id="settings-save-btn" class="settings-btn settings-btn-save" disabled>
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button id="settings-signout-btn" class="settings-btn settings-btn-signout">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- New Project Modal -->
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Project</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="project-name">Project Name:</label>
+                    <input type="text" id="project-name" placeholder="Enter a name for your project">
+                </div>
+                <button id="create-project-btn" class="primary-btn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Container (Initially Hidden) -->
+    <div id="app-container" style="display: none;">
+        <!-- Canvas -->
+        <div id="canvas-wrapper">
+            <!-- Canvas structure will be created dynamically by JavaScript -->
+        </div>
+
+        <!-- Bottom Blur Overlay -->
+        <div class="bottom-blur-overlay"></div>
+
+        <!-- Action Bar (Island) -->
+        <div id="action-bar" class="action-bar">
+            <!-- Content will be injected by JS -->
+        </div>
+
+        <!-- UI Controls -->
+        <div id="file-name-display">Untitled</div>
+
+        <!-- Language Selector - REMOVED -->
+        <!-- 
+        <div id="language-selector" class="language-selector">
+            <i class="fas fa-globe"></i>
+            <span class="current-language">EN</span>
+            <div class="language-options">
+                <div class="language-option" data-lang="en">English</div>
+                <div class="language-option" data-lang="es">Español</div>
+                <div class="language-option" data-lang="fr">Français</div>
+                <div class="language-option" data-lang="de">Deutsch</div>
+                <div class="language-option" data-lang="tr">Türkçe</div>
+            </div>
+        </div>
+        -->
+
+
+        <!-- Night mode and fullscreen controls moved to Settings panel -->
+
+        <!-- Menu Button and Dropdown -->
+        <button id="menu-button" class="hamburger-menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div id="dropdown-menu">
+            <button id="new-mosaic-btn">New Mosaic</button>
+            <button id="save-button">Save Project</button>
+            <button id="upload-button">Open Project</button>
+            <button id="export-button">Export as Image</button>
+            <button id="export-pdf-button">Export as PDF</button>
+            <button id="reset-canvas">Reset View</button>
+        </div>
+
+        <!-- Footer -->
+        <!-- Footer Removed -->
+
+        <!-- Connection Removal SVG -->
+        <svg id="removal-line"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1500;">
+            <line id="removal-path" stroke="#FF506B" stroke-width="2" stroke-dasharray="5,5" visibility="hidden"></line>
+        </svg>
+    </div>
+
+    <!-- Hidden file input for Drive upload - MOVED TO BODY END -->
+    <!-- <input type="file" id="drive-upload-input" accept=".mosaic,application/json" style="display: none;"> -->
+
+    <!-- Scripts -->
+    <script src="js/app-lifecycle.js?v=1"></script> <!-- APP LIFECYCLE -->
+    <script src="js/app-node-registry.js?v=2"></script>
+    <script src="js/supabase-client.js?v=2"></script> <!-- SUPABASE CLIENT -->
+    <script src="js/auth-supabase.js?v=2"></script> <!-- SUPABASE AUTH -->
+    <script src="js/cloud-storage.js?v=2"></script> <!-- CLOUD STORAGE -->
+    <!-- PeerJS for P2P -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="js/operation-log.js"></script> <!-- OPERATION LOG -->
+    <script src="js/p2p-manager.js"></script> <!-- P2P MANAGER -->
+    <script src="js/cursor-sync.js"></script> <!-- CURSOR SYNC -->
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="crop-modal">
+        <div class="crop-modal-content">
+            <div class="crop-modal-header">
+                <h3>Adjust Photo</h3>
+                <span id="crop-modal-close" class="crop-modal-close">&times;</span>
+            </div>
+            <div class="crop-modal-body">
+                <div class="crop-container">
+                    <img id="crop-image" src="" alt="Image to crop">
+                </div>
+            </div>
+            <div class="crop-modal-footer">
+                <button id="crop-cancel-btn" class="secondary-btn">Cancel</button>
+                <button id="crop-save-btn" class="primary-btn">Save Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/canvas.js?v=2"></script>
+    <script src="js/node_system.js?v=2"></script>
+    <script src="js/smart-guides.js?v=2"></script> <!-- SMART GUIDES -->
+    <script src="js/nodes.js?v=2"></script>
+    <script src="js/connections.js"></script>
+    <script src="js/drawing-system.js"></script>
+    <script src="js/ui.js?v=2"></script>
+    <script src="js/data-card-store.js?v=1"></script> <!-- DATA CARD STORE -->
+    <script src="js/node-loader.js?v=2"></script> <!-- NEW NODE LOADER -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> <!-- ZIP ARCHIVE -->
+    <script src="js/asset-manager.js?v=1"></script> <!-- ASSET MANAGER -->
+    <script src="js/lazy-asset-loader.js?v=1"></script> <!-- LAZY LOADING -->
+    <script src="js/format-migrator.js?v=1"></script> <!-- FORMAT MIGRATION -->
+    <script src="js/file-management.js?v=3"></script>
+    <script src="js/history.js?v=2"></script>
+    <script src="js/viewport-manager.js?v=2"></script>
+    <script src="js/command-palette.js?v=2"></script>
+    <script src="js/stickers.js?v=2"></script>
+    <script src="js/action-bar.js?v=2"></script>
+    <script src="js/objects-panel.js?v=2"></script>
+    <script src="js/groups.js?v=2"></script>
+    <script src="js/settings-manager.js?v=1"></script> <!-- SETTINGS MANAGER -->
+    <script src="js/custom-titlebar.js?v=2"></script> <!-- CUSTOM TITLE BAR -->
+    <script src="js/multiplayer.js"></script>
+    <script src="js/presence-manager.js"></script> <!-- PRESENCE/STATUS -->
+    <script src="js/dashboard.js?v=2"></script> <!-- DASHBOARD -->
+    <script src="js/signin.js?v=2"></script> <!-- SIGN IN SCREEN -->
+    <script src="js/signup.js?v=2"></script> <!-- SIGN UP SCREEN -->
+    <script src="js/user-settings.js?v=2"></script> <!-- USER SETTINGS -->
+    <script src="js/unified-bar.js?v=2"></script> <!-- UNIFIED BAR -->
+    <script src="js/chat-manager.js"></script>
+    <script src="js/voice-manager.js"></script>
+    <script src="js/main.js?v=2"></script>
+
+</body>
+
+</html>

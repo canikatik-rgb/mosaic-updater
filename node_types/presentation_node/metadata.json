@@ -1,0 +1,26 @@
+{
+    "id": "presentation_node",
+    "name": {
+        "en": "Presentation Node",
+        "tr": "Sunum Node",
+        "es": "Nodo Presentación",
+        "fr": "Nœud Présentation",
+        "de": "Präsentations-Knoten"
+    },
+    "description": {
+        "en": "Create interactive slides from Canvas nodes",
+        "tr": "Canvas node'larından interaktif sunumlar oluşturun",
+        "es": "Crear diapositivas interactivas desde nodos Canvas",
+        "fr": "Créer des diapositives interactives à partir de nœuds Canvas",
+        "de": "Erstellen Sie interaktive Folien aus Canvas-Knoten"
+    },
+    "version": "1.0.0",
+    "icon": "fa-film",
+    "tags": [
+        "presentation",
+        "slides",
+        "canvas",
+        "projection"
+    ],
+    "category": "Visual"
+}

@@ -1,0 +1,23 @@
+{
+    "id": "color_node",
+    "name": {
+        "en": "Color Node",
+        "tr": "Renk Seçici",
+        "es": "Nodo de Color",
+        "fr": "Nœud de Couleur",
+        "de": "Farbknoten"
+    },
+    "description": {
+        "en": "Pick and output a color",
+        "tr": "Renk seç ve çıktı ver",
+        "es": "Elegir y emitir un color",
+        "fr": "Choisir et émettre une couleur",
+        "de": "Farbe wählen und ausgeben"
+    },
+    "icon": "fa-palette",
+    "version": "1.0",
+    "tags": [
+        "tool",
+        "input"
+    ]
+}

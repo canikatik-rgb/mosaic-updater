@@ -1,0 +1,24 @@
+{
+    "id": "3d_canvas_node",
+    "name": {
+        "en": "3D Canvas",
+        "tr": "3D Tuval",
+        "es": "Lienzo 3D",
+        "fr": "Canevas 3D",
+        "de": "3D-Leinwand"
+    },
+    "description": {
+        "en": "View and interact with 3D models (STL, GLB, OBJ)",
+        "tr": "3D modelleri görüntüle ve etkileşim kur (STL, GLB, OBJ)",
+        "es": "Ver e interactuar con modelos 3D (STL, GLB, OBJ)",
+        "fr": "Visualiser et interagir avec des modèles 3D (STL, GLB, OBJ)",
+        "de": "3D-Modelle anzeigen und interagieren (STL, GLB, OBJ)"
+    },
+    "icon": "fa-cube",
+    "version": "1.0",
+    "tags": [
+        "advanced",
+        "visualization",
+        "3d"
+    ]
+}

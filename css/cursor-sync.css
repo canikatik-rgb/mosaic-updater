@@ -1,0 +1,207 @@
+/* Cursor Sync - Remote cursor styles */
+
+.cursor-sync-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: visible;
+}
+
+.remote-cursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0;
+    transition: left 0.12s linear, top 0.12s linear, opacity 0.2s ease;
+    will-change: left, top, opacity;
+}
+
+.remote-cursor.active {
+    opacity: 1;
+}
+
+.remote-cursor.leaving {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.remote-cursor .cursor-pointer {
+    width: 20px;
+    height: 20px;
+    color: var(--cursor-color, #4ade80);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.remote-cursor .cursor-label {
+    position: absolute;
+    top: 16px;
+    left: 12px;
+    padding: 2px 6px;
+    background: var(--cursor-color, #4ade80);
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Node lock indicator */
+.node.locked-by-other {
+    outline: 2px dashed var(--lock-color, #f97316) !important;
+    outline-offset: 2px;
+}
+
+.node.locked-by-other .content {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+.node.locked-by-other::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--lock-color, #f97316);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    50% {
+        transform: translateX(4px);
+    }
+
+    75% {
+        transform: translateX(-4px);
+    }
+}
+
+.node-lock-avatar {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid var(--lock-color, #f97316);
+    background: #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lock-color, #f97316);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.node-lock-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Collaborators presence panel */
+.collab-presence-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.collab-presence-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+
+.collab-presence-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.collab-presence-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+}
+
+.collab-presence-name {
+    flex: 1;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collab-presence-status {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.collab-presence-item.is-you .collab-presence-name::after {
+    content: ' (you)';
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Light mode adjustments */
+body:not(.night-mode) .collab-presence-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body:not(.night-mode) .collab-presence-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body:not(.night-mode) .collab-presence-name {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+body:not(.night-mode) .collab-presence-status {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+body:not(.night-mode) .node-lock-avatar {
+    background: #ffffff;
+}

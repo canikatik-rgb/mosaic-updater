@@ -1,0 +1,23 @@
+{
+    "id": "url_node",
+    "name": {
+        "en": "URL Embed",
+        "tr": "Site Gömme",
+        "es": "Insertar URL",
+        "fr": "Intégration URL",
+        "de": "URL-Einbettung"
+    },
+    "description": {
+        "en": "Embed live websites",
+        "tr": "Canlı web sitelerini göm",
+        "es": "Insertar sitios web en vivo",
+        "fr": "Intégrer des sites web en direct",
+        "de": "Live-Websites einbetten"
+    },
+    "icon": "fa-globe",
+    "version": "1.0",
+    "tags": [
+        "web",
+        "embed"
+    ]
+}

@@ -1,0 +1,46 @@
+appId: com.mosaic.app
+productName: Mosaic
+copyright: Copyright © 2026 Caner Atik
+
+# Build configuration
+directories:
+  output: dist
+  buildResources: build
+
+# Auto-Update Configuration
+publish:
+  provider: github
+  owner: canikatik-rgb
+  repo: mosaic-updater
+
+# File associations - Open .mosaic files with Mosaic app
+fileAssociations:
+  - ext: mosaic
+    name: Mosaic Project
+    description: Mosaic Multiplayer Browser Project File
+    mimeType: application/x-mosaic
+    role: Editor
+    icon: images/icon.png
+
+# macOS configuration
+mac:
+  category: public.app-category.productivity
+  icon: images/icon.png
+  target:
+    - dmg
+    - zip
+
+# Windows configuration
+win:
+  icon: images/icon.png
+  target:
+    - nsis
+    - portable
+
+# Linux configuration
+linux:
+  icon: images/icon.png
+  category: Office
+  target:
+    - AppImage
+    - deb

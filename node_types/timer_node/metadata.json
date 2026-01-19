@@ -1,0 +1,23 @@
+{
+    "id": "timer_node",
+    "name": {
+        "en": "Timer",
+        "tr": "Zamanlayıcı",
+        "es": "Temporizador",
+        "fr": "Minuteur",
+        "de": "Timer"
+    },
+    "description": {
+        "en": "Countdown timer and stopwatch",
+        "tr": "Geri sayım ve kronometre",
+        "es": "Cuenta atrás y cronómetro",
+        "fr": "Compte à rebours et chronomètre",
+        "de": "Countdown-Timer und Stoppuhr"
+    },
+    "icon": "fa-clock",
+    "version": "1.0",
+    "tags": [
+        "productivity",
+        "time"
+    ]
+}

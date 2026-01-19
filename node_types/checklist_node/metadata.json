@@ -1,0 +1,23 @@
+{
+    "id": "checklist_node",
+    "name": {
+        "en": "Checklist",
+        "tr": "Kontrol Listesi",
+        "es": "Lista de Verificación",
+        "fr": "Liste de Contrôle",
+        "de": "Checkliste"
+    },
+    "description": {
+        "en": "Track tasks and progress",
+        "tr": "Görevleri ve ilerlemeyi takip et",
+        "es": "Seguir tareas y progreso",
+        "fr": "Suivre les tâches et la progression",
+        "de": "Aufgaben und Fortschritt verfolgen"
+    },
+    "icon": "fa-list-ul",
+    "version": "1.0",
+    "tags": [
+        "productivity",
+        "list"
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "id": "save_node",
+    "name": {
+        "en": "Save As Node",
+        "tr": "Kaydetme Aracı",
+        "es": "Guardar Como",
+        "fr": "Enregistrer Sous",
+        "de": "Speichern Unter"
+    },
+    "description": {
+        "en": "Export content to file",
+        "tr": "İçeriği dosyaya aktar",
+        "es": "Exportar contenido a archivo",
+        "fr": "Exporter le contenu vers un fichier",
+        "de": "Inhalt in Datei exportieren"
+    },
+    "icon": "fa-file-export",
+    "version": "1.0",
+    "tags": [
+        "tool",
+        "export"
+    ]
+}

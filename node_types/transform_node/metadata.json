@@ -1,0 +1,23 @@
+{
+    "id": "transform_node",
+    "name": {
+        "en": "Transform Node",
+        "tr": "Dönüştürücü",
+        "es": "Nodo Transformador",
+        "fr": "Nœud de Transformation",
+        "de": "Transformationsknoten"
+    },
+    "description": {
+        "en": "Process and transform text",
+        "tr": "Metni işle ve dönüştür",
+        "es": "Procesar y transformar texto",
+        "fr": "Traiter et transformer du texte",
+        "de": "Text verarbeiten und transformieren"
+    },
+    "icon": "fa-ruler-combined",
+    "version": "1.0",
+    "tags": [
+        "tool",
+        "utility"
+    ]
+}

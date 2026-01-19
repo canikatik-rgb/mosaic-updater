@@ -1,0 +1,24 @@
+{
+    "name": "mosaic",
+    "productName": "Mosaic",
+    "version": "1.0.0",
+    "description": "Interactive WEB Orchestration Platform",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
+    },
+    "author": "Caner Atik",
+    "license": "ISC",
+    "devDependencies": {
+        "electron": "^40.0.0",
+        "electron-builder": "^25.1.8"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.89.0",
+        "cropperjs": "^1.6.2",
+        "electron-updater": "^6.7.3",
+        "jszip": "^3.10.1"
+    }
+}

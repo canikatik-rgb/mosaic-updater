@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic - Loading</title>
+    <link rel="stylesheet" href="css/splash.css">
+</head>
+
+<body>
+    <div class="splash-container">
+        <div class="logo-container">
+            <img src="images/icon.png" alt="Mosaic Logo" class="splash-logo">
+            <h1>Mosaic</h1>
+        </div>
+
+        <div class="status-container">
+            <div class="loader">
+                <div class="bar"></div>
+            </div>
+            <div id="status-text" class="status-text">Initializing...</div>
+            <div id="version-text" class="version-text">v1.0.0</div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Listen for status updates from main process
+        ipcRenderer.on('splash-status', (event, text) => {
+            const el = document.getElementById('status-text');
+            if (el) {
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.innerText = text;
+                    el.style.opacity = '1';
+                }, 150);
+            }
+        });
+
+        ipcRenderer.on('app-version', (event, version) => {
+            const el = document.getElementById('version-text');
+            if (el) el.innerText = `v${version}`;
+        });
+    </script>
+</body>
+
+</html>

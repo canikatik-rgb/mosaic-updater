@@ -1,0 +1,23 @@
+{
+    "id": "text_node",
+    "name": {
+        "en": "Text Node",
+        "tr": "Metin Notu",
+        "es": "Nota de Texto",
+        "fr": "Note de Texte",
+        "de": "Textnotiz"
+    },
+    "description": {
+        "en": "Add simple text content",
+        "tr": "Basit metin içeriği ekle",
+        "es": "Añadir contenido de texto simple",
+        "fr": "Ajouter du contenu textuel simple",
+        "de": "Einfachen Textinhalt hinzufügen"
+    },
+    "icon": "fa-font",
+    "version": "1.0",
+    "tags": [
+        "basic",
+        "text"
+    ]
+}
