@@ -61,3 +61,7 @@ Built with cutting-edge web technologies and wrapped in a high-performance nativ
 
 ### Join the revolution.
 **This is not just work. This is Mosaic.**
+
+## 📄 Licence
+
+Mosaic © by [Ad Nouveau](https://ad-nouveau.com/)
