@@ -1,251 +1,63 @@
-# Mosaic — Virtual Office & Remote Workspace
+# Mosaic
+## The Infinite Canvas OS
 
-<p align="center">
-  <strong>Ofisinizi bir node tuvaline dönüştürün. Beraber çalışın, paylaşın, üretin.</strong>
-</p>
+**Turn your office into a limitless digital playground.**
 
----
-
-Mosaic, geleneksel işbirliği araçlarının ötesinde, P2P tabanlı bir **Sanal Ofis (Virtual Office)** ve **Uzak Çalışma Alanıdır**. Sonsuz bir tuval üzerinde, her biri bağımsız birer araç olarak çalışan "akıllı node'lar" ile çalışma ortamınızı kurabilir, sesli ve yazılı olarak ekibinizle anlık iletişimde kalabilirsiniz.
-
-> **Vizyonumuz:** Discord'un iletişim gücünü Miro'nun görsel esnekliğiyle birleştirerek, fiziksel ofis hissini dijital dünyaya taşımak.
+Mosaic is not just another collaboration tool; it's a **"Virtual Office OS"** designed for the modern, distributed workforce. It reimagines the workspace as an **infinite, living node canvas** where teams live, talk, share, and build together in real-time. Neither a simple whiteboard nor a rigid project management tool—Mosaic is a fluid digital environment that adapts to how you think.
 
 ---
 
-## 🧩 Web App Node Sistemi
+## 🚀 The Vision
 
-Mosaic'in kalbinde **sandbox iframe** içinde çalışan, birbirinden bağımsız mini uygulamalar yatar. Her node:
+We believe the future of work isn't about sending files back and forth or getting lost in endless notification streams. It's about **presence**. 
 
-- **Kendi state'ini yönetir** — Veri kaybetmeden kaydedilir ve yüklenir
-- **Diğer node'larla iletişim kurar** — MessageChannel üzerinden güvenli veri alışverişi
-- **Gerçek zamanlı güncellenir** — Kaynak değiştiğinde bağlı hedefler otomatik güncellenir
+Mosaic brings back the "shoulder-to-shoulder" feeling of a physical office, but with the superpowers of software.
 
-### Mevcut Node Tipleri
-
-| Kategori | Node | Açıklama |
-|----------|------|----------|
-| **Temel** | 📝 Text Node | Zengin metin notları |
-| | ✅ Checklist | Görev takibi |
-| | ⏱️ Timer | Geri sayım zamanlayıcı |
-| **Görsel** | 🎨 Canvas Node | 2D çizim ve kompozisyon |
-| | 🧊 3D Canvas | Three.js ile 3D sahne editörü |
-| | 📊 Presentation | Canvas slaytlarını sunum modunda gösterir |
-| | 🖼️ Gallery | Görsel galerisi ve seçici |
-| **İçerik** | 📄 Doc Editor | Quill.js tabanlı zengin metin (Görsel Sayfalama) |
-| | 💻 Code Editor | Sözdizimi vurgulu kod editörü |
-| | 🔗 URL Node | Web sayfası görüntüleyici + element inspector |
-| **Araçlar** | 📤 QR Node | Metinden QR kod oluşturucu |
-| | 🎨 Color Node | Renk seçici ve paletler |
-| | 💾 Save Node | Dosya export (PDF, SVG, HTML, TXT, JSON) |
-| | 🔄 Transform Node | Veri dönüştürme işlemleri |
-| | 📦 HTML Embed | Özel HTML/CSS/JS içeriği |
-| **Dekoratif** | 😊 Stickers | Sürükle-bırak sticker sistemi |
+> **"Don't just share a file. Share your workspace."**
 
 ---
 
-## 🔄 Node Bağlantıları = Veri Akışları
+## 💎 Core Pillars
 
-Node'ları pin'lerinden sürükleyerek birbirine bağlayabilirsiniz. Bağlantılar üzerinden akan veri tipleri:
+### 1. The Semantic Data Protocol (SDP)
+At the heart of Mosaic lies a powerful, proprietary data structure. Every piece of content—be it text, an image, a PDF, or a 3D model—is treated as a **Semantic Node**. This allows for effortless interoperability, smart data binding, and intelligent context awareness across your entire workspace.
 
-- **image** — Base64 veya URL formatında görseller
-- **text** — Düz metin içeriği
-- **html** — HTML markup
-- **svg** — Vektör grafikleri
-- **url** — Web adresleri
-- **color** — Renk değerleri
+### 2. Local-First & P2P Architecture
+Your data belongs to you. Mosaic is built on a **Local-First** philosophy. 
+- **Zero-Latency:** Work primarily on your device with native performance.
+- **Serverless Collaboration:** Our advanced **P2P engine** allows you to host projects directly from your machine. Connect with teammates via secure, encrypted tunnels without your data ever resting on a central server.
+- **Offline Capable:** The internet is optional. Keep working; sync happens magically when you reconnect.
 
-### Örnek Akışlar
+### 3. The Infinite Browser Node
+Why tab-switch when you can embed the web? Mosaic introduces **URL Nodes**—fully functional, interactive browser instances living directly on your canvas. 
+- **Spatial Browsing:** Organize web apps, research papers, and live dashboards side-by-side.
+- **Smart Extraction:** Drag content from a live website directly into your workspace as a native node.
 
-```
-📷 Gallery → 🎨 Canvas    # Galeri'den seçilen görsel Canvas'ta görünür
-🧊 3D Canvas → 🎨 Canvas  # 3D snapshot Canvas'a gönderilir
-📄 Doc Editor → 💾 Save   # Editör içeriği dosya olarak kaydedilir
-🔗 URL → � QR            # Web adresi QR koda dönüşür
-```
-
----
-
-## ✨ Temel Özellikler
-
-### 🌍 Sonsuz Tuval
-Sınırsız pan ve zoom ile fikirlerinizi özgürce organize edin.
-
-### 📦 Gruplama
-İlişkili node'ları renkli gruplar halinde düzenleyin.
-
-### ⏪ Undo/Redo
-`Ctrl+Z` / `Ctrl+Y` ile her değişikliği geri alın.
-
-### 🎨 Night Mode
-Karanlık tema ile gece çalışmaları için göz konforu.
-
-### 💾 Yerel Kayıt
-Projelerinizi `.mosaic` formatında kaydedin, istediğiniz zaman açın.
-
-### 🌐 Çoklu Dil
-İngilizce, İspanyolca, Fransızca, Almanca ve Türkçe desteği.
-
-### 😊 Sticker Sistemi
-Kategori bazlı sticker paneli ile projelerinizi görsel olarak zenginleştirin.
-
-### 💬 Dinamik Karşılama
-Her yeni projede ilham verici rastgele alıntılarla karşılanın.
+### 4. Bi-Directional Harmony
+Mosaic doesn't just display information; it interacts with it. Our architecture is designed to bridge the gap between your canvas and external applications, enabling flows where data moves seamlessly in both directions.
 
 ---
 
-## 🚀 Başlarken
+## 🌟 Key Features
 
-```bash
-# Bağımlılıkları yükle
-npm install
-
-# Uygulamayı başlat
-npm start
-```
-
-1. **Oluştur**: Çift tıklayarak text node ekleyin veya `Shift+A` ile gelişmiş node'lar
-2. **Bağla**: Pin'lerden sürükleyerek node'ları birbirine bağlayın
-3. **Grupla**: Birden fazla node seçip gruplandırın
-4. **Kaydet**: `Cmd+S` ile projenizi kaydedin
+*   **Infinite Spatial Canvas:**  Limitless zoom, pan, and organization.
+*   **Real-Time Multiplayer:**  See cursors, selections, and edits instantly.
+*   **Audio & Presence:**  Drop-in voice channels that make remote work feel human.
+*   **Universal File Support:**  Drag and drop anything—images, videos, PDFs, 3D models.
+*   **Smart Links:**  Paste a URL, get a rich, interactive preview or a full browser node.
+*   **Privacy by Design:**  End-to-end P2P sharing options for sensitive projects.
 
 ---
 
-## ⌨️ Klavye Kısayolları
+## 🛠️ Technology
 
-| İşlem | Windows / Linux | Mac |
-|-------|-----------------|-----|
-| **Komut Paleti** | `Shift + A` | `Shift + A` |
-| **Kaydet** | `Ctrl + S` | `Cmd + S` |
-| **Aç** | `Ctrl + O` | `Cmd + O` |
-| **Yeni Proje** | `Ctrl + N` | `Cmd + N` |
-| **Geri Al** | `Ctrl + Z` | `Cmd + Z` |
-| **Yinele** | `Ctrl + Y` | `Cmd + Shift + Z` |
-| **Stickers** | Action Bar'dan 😊 | Action Bar'dan 😊 |
-| **Sil** | `Del` / `Backspace` | `Del` / `Backspace` |
+Built with cutting-edge web technologies and wrapped in a high-performance native shell, Mosaic leverages:
 
-### 3D Canvas Özel Kısayolları
-| İşlem | Kısayol |
-|-------|---------|
-| **Taşı (Move)** | `G` |
-| **Döndür (Rotate)** | `R` |
-| **Ölçekle (Scale)** | `S` |
-| **Snapshot** | `Space` (Output gönderir) |
-
-### Canvas Node Özel Kısayolları
-| İşlem | Kısayol |
-|-------|---------|
-| **Yapıştır** | `Ctrl + V` (Resim/Metin) |
-| **Sil** | `Del` / `Backspace` |
-| **Zoom** | `Ctrl + Wheel` |
-| **Pan** | `Space + Drag` |
+*   **WebRTC:** For ultra-low latency peer-to-peer data and media streaming.
+*   **CRDTs (Conflict-free Replicated Data Types):** Ensuring consistent state across all users without conflicts.
+*   **GPU Acceleration:** For buttery smooth rendering of complex, media-rich canvases.
 
 ---
 
-## 🛠️ Teknik Mimari
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                 Electron Main Process                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │   main.js   │  │  Clipboard  │  │   Native    │     │
-│  │ (IPC Host)  │  │    API      │  │   Dialog    │     │
-│  └──────┬──────┘  └─────────────┘  └─────────────┘     │
-│         │                                                │
-│         ▼ IPC Bridge                                     │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │              Renderer (index.html)               │   │
-│  │  ┌─────────────┐  ┌─────────────┐               │   │
-│  │  │ Node System │  │ Connections │               │   │
-│  │  └──────┬──────┘  └──────┬──────┘               │   │
-│  │         │                │                        │   │
-│  │    ┌────▼────┐     ┌────▼────┐      ┌────────┐  │   │
-│  │    │ iframe  │     │ webview │      │ iframe │  │   │
-│  │    │ Canvas  │     │ URL Node│      │ 3D Node│  │   │
-│  │    └─────────┘     └─────────┘      └────────┘  │   │
-│  └─────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-```
-
-- **Electron** — Cross-platform desktop application
-- **Webview** — URL Node için izole web tarayıcısı (Google Docs, Figma erişimi)
-- **Sandbox iframe** — Dahili node'lar için güvenli çalışma ortamı
-- **IPC + MessageChannel** — Güvenli process arası iletişim
-- **Native Clipboard** — Görsel/metin enjeksiyonu için OS seviyesi erişim
-
----
-
-## 📂 Proje Yapısı
-
-```
-/Mosaic
-├── main.js              # Electron main process
-├── preload.js           # Preload script (IPC bridge)
-├── index.html           # Renderer entry point
-├── package.json         # Electron & npm config
-├── css/                 # Stiller (değişkenler, dark mode)
-├── js/
-│   ├── app.js           # Renderer uygulama başlatma
-│   ├── nodes.js         # Node yönetimi
-│   ├── node-loader.js   # iframe/webview node yükleyici
-│   ├── node_system.js   # Veri akış yönetimi
-│   ├── MosaicNode.js    # SDK (iframe içi API)
-│   ├── SDP.js           # Semantic Data Protocol
-│   ├── connections.js   # Bağlantı çizimi
-│   ├── history.js       # Undo/Redo sistemi
-│   └── ...
-├── node_types/          # Web App Node'lar
-│   ├── url_node/        # Webview tabanlı (harici siteler)
-│   ├── 3d_canvas_node/  # iframe tabanlı
-│   ├── canvas_node/
-│   └── ...
-├── stickers/            # Sticker kategorileri
-└── SDK_README.md        # Node geliştirme kılavuzu
-```
-
----
-
-## 🔮 Gelecek Planları
-
-### ✅ Tamamlanan
-- **Semantic Data Protocol (SDP)** — Tip korumalı ve metadata zengini veri akışı
-- **Cloud Sync Infrastructure** — Supabase entegrasyonu ve proje yükleme
-- **Sharing UI** — Proje paylaşımı ve collaborators yönetimi
-- **Objects Panel** — Title bar'a taşındı, sequential navigation, dropdown, focus mode navigation
-- **Focus Mode Improvements** — Smooth node transitions, responsive I/O panels (initially pinned), preserved node dimensions on exit
-- **Title Bar Polish** — Share button hidden when no project, Objects Panel flows with titlebar-left elements
-- **Auth State Bug Fix** — Fixed sidebar/dashboard auto-show on app focus
-
-### 🔄 Devam Eden
-- **ZIP-Based Archive System** — Monolitik JSON'dan ZIP-tabanlı archive'a geçiş
-  - ✅ Asset extraction (Base64 → dosya)
-  - ✅ ZIP save/load with JSZip
-  - 🔄 Lazy loading for large assets
-  
-- **File-backed Data Cards** — Gerçek dosya tabanlı veri kartları
-  - 🔄 Harici uygulamalara (Figma, WeTransfer) evrensel sürükle-bırak
-  - 🔄 Electron `startDrag()` ile native dosya sürükleme
-  - 🔄 URL Node indirmelerini otomatik kart olarak yakalama
-  
-- **Realtime Multiplayer** — Canlı imleç takibi ve event broadcasting (Phase 1)
-- **Bi-directional RPA** — Node'lardan harici web sitelerine veri yazma ve etkileşim
-
-### 📋 Planlanan
-- **Advanced Injection System v2** — Cross-origin uygulamalara (Google Docs, Figma vb.) güvenilir enjeksiyon
-  - Electron Native Clipboard (`clipboard.writeImage` + `webview.paste()`)
-  - Crosshair Overlay ile görsel pozisyon takibi
-  - Zero-width marker'lar ve MutationObserver
-  
-- **Command-Based History** — İleri seviye undo/redo ve zaman yolculuğu
-- **Smart Transformers** — Yapay zeka destekli veri işleme node'ları
-
----
-
-## 📄 Lisans
-
-Mosaic © by [Ad Nouveau](https://ad-nouveau.com/)
-
----
-
-<p align="center">
-  <strong>Fikirlerinizi bağlayın. Akışlarınızı görselleştirin. Mosaic ile.</strong>
-</p>
+### Join the revolution.
+**This is not just work. This is Mosaic.**
