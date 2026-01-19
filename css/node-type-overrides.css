@@ -1,5 +1,0 @@
-/* Text Node Specific Sizing */
-.app-node[data-type="text_node"] {
-    min-width: 250px !important;
-    min-height: 150px !important;
-}
