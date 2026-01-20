@@ -1,5 +1,7 @@
+![cover](https://github.com/user-attachments/assets/6aa45fe7-d9d8-449c-9590-7ddcd1e1b680)
+
 # Mosaic
-## The Infinite Canvas OS
+## The Virtual Office Canvas OS
 
 **Turn your office into a limitless digital playground.**
 
