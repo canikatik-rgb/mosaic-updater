@@ -1,69 +1,113 @@
-![cover](https://github.com/user-attachments/assets/6aa45fe7-d9d8-449c-9590-7ddcd1e1b680)
+<p align="center">
+  <img src=".github/assets/icon.png" width="104" alt="Mosaic">
+</p>
 
-# Mosaic
-## The Virtual Office Canvas OS
+<h1 align="center">Mosaic</h1>
 
-**Turn your office into a limitless digital playground.**
+<p align="center">
+  <b>Your team's real apps, on one shared table.</b><br>
+  A multiplayer canvas made of live apps. Files move between computers without ever being sent.<br>
+  Peer to peer. No servers. No accounts.
+</p>
 
-Mosaic is not just another collaboration tool; it's a **"Virtual Office OS"** designed for the modern, distributed workforce. It reimagines the workspace as an **infinite, living node canvas** where teams live, talk, share, and build together in real-time. Neither a simple whiteboard nor a rigid project management tool—Mosaic is a fluid digital environment that adapts to how you think.
+<p align="center">
+  <a href="https://github.com/canikatik-rgb/mosaic-updater/releases/latest"><b>Download</b></a> ·
+  <a href="https://www.mosaicanvas.com">Website</a> ·
+  <a href="https://www.mosaicanvas.com/privacy">Privacy</a>
+</p>
 
----
+<p align="center">
+  <img src=".github/assets/apps.jpg" alt="A Mosaic board on a grass wallpaper: a film edit and a launch brief open side by side, connected by a line. A file, hero-still.jpg, is on its way along the line. A yellow post-it says: Picture lock Friday!" width="100%">
+</p>
 
-## 🚀 The Vision
+## What is Mosaic?
 
-We believe the future of work isn't about sending files back and forth or getting lost in endless notification streams. It's about **presence**. 
+Mosaic is a desktop app for macOS, Windows and Linux. It's an infinite board where everyone brings the web apps they already work in, as live nodes. A page runs on its owner's computer, signed in as them, and everyone at the table watches it live.
 
-Mosaic brings back the "shoulder-to-shoulder" feeling of a physical office, but with the superpowers of software.
+Connect two nodes with a line and files start to travel along it: export something in one app, and it's already waiting in the next one, on someone else's computer. No attachment, no link, no upload.
 
-> **"Don't just share a file. Share your workspace."**
+Boards live only on the computers of the people on them. There is no Mosaic server holding your work, and no account to create.
 
----
+## Download
 
-## 💎 Core Pillars
+Get the latest version from **[Releases](https://github.com/canikatik-rgb/mosaic-updater/releases/latest)**.
 
-### 1. The Semantic Data Protocol (SDP)
-At the heart of Mosaic lies a powerful, proprietary data structure. Every piece of content—be it text, an image, a PDF, or a 3D model—is treated as a **Semantic Node**. This allows for effortless interoperability, smart data binding, and intelligent context awareness across your entire workspace.
+| Platform | File |
+|---|---|
+| macOS, Apple silicon | `Mosaic-<version>-arm64.dmg` |
+| macOS, Intel | `Mosaic-<version>-x64.dmg` |
+| Windows 10 and 11 | the `.exe` installer |
+| Linux | the `.AppImage` |
 
-### 2. Local-First & P2P Architecture
-Your data belongs to you. Mosaic is built on a **Local-First** philosophy. 
-- **Zero-Latency:** Work primarily on your device with native performance.
-- **Serverless Collaboration:** Our advanced **P2P engine** allows you to host projects directly from your machine. Connect with teammates via secure, encrypted tunnels without your data ever resting on a central server.
-- **Offline Capable:** The internet is optional. Keep working; sync happens magically when you reconnect.
+Mosaic Bridge, the optional Chrome extension that lets pages open in your own Chrome with your extensions and logins, will come from the Chrome Web Store.
 
-### 3. The Infinite Browser Node
-Why tab-switch when you can embed the web? Mosaic introduces **URL Nodes**—fully functional, interactive browser instances living directly on your canvas. 
-- **Spatial Browsing:** Organize web apps, research papers, and live dashboards side-by-side.
-- **Smart Extraction:** Drag content from a live website directly into your workspace as a native node.
+The first public release is on its way. Watch this repository (Watch › Custom › Releases) to hear when it's out.
 
-### 4. Bi-Directional Harmony
-Mosaic doesn't just display information; it interacts with it. Our architecture is designed to bridge the gap between your canvas and external applications, enabling flows where data moves seamlessly in both directions.
+## Highlights
 
----
+<table>
+  <tr>
+    <td width="50%"><img src=".github/assets/folder-close.jpg" alt="A folder from someone's computer, open in its window on a clouds wallpaper."></td>
+    <td width="50%"><img src=".github/assets/desk.jpg" alt="A wooden desk with files on it, a task list, a post-it, a timer and a voice memo recorder, on a gradient wallpaper."></td>
+  </tr>
+  <tr>
+    <td><b>A real folder, on the board.</b> Put a folder from your computer on the board. Anyone can open it in its own window and take what they need. Files only travel when someone opens or saves them, and nobody can write into yours.</td>
+    <td><b>The desk.</b> Post-its, a timer, a voice memo recorder, a record player, a task list, a teleport… Desk objects made like the real thing, and everyone at the table can use them.</td>
+  </tr>
+</table>
 
-## 🌟 Key Features
+- **Live apps as nodes.** Paste a link and it opens on the board: in Mosaic, or in your own Chrome through Mosaic Bridge. Focus mode gives a page the whole screen.
+- **Files, bridged between computers.** Cards travel along connections between nodes, straight from one computer to the next, resuming where they left off and checked byte for byte when they land.
+- **Everything you'd do at a real table.** Invite links and a knock to come in, roles (owner, partner, member, observer), live cursors, follow mode, "Look here", spatial audio, chat, and session history.
+- **Private pages.** Mark a page private and it never leaves your screen; others see that it's there, not what's in it.
+- **Works on your network.** In the same office, Mosaic finds the others on the local network and keeps working without internet.
+- **Bring your own AI.** Invite an agent (Claude, OpenAI or Gemini, with your own API key) to read the board, write post-its, open pages and arrange nodes. Optional MCP tools, each asked for before use.
 
-*   **Infinite Spatial Canvas:**  Limitless zoom, pan, and organization.
-*   **Real-Time Multiplayer:**  See cursors, selections, and edits instantly.
-*   **Audio & Presence:**  Drop-in voice channels that make remote work feel human.
-*   **Universal File Support:**  Drag and drop anything—images, videos, PDFs, 3D models.
-*   **Smart Links:**  Paste a URL, get a rich, interactive preview or a full browser node.
-*   **Privacy by Design:**  End-to-end P2P sharing options for sensitive projects.
+<p align="center">
+  <img src=".github/assets/gadget-note.png" height="120" alt="Post-it">
+  <img src=".github/assets/gadget-tasks.png" height="120" alt="Task list">
+  <img src=".github/assets/gadget-timer.png" height="120" alt="Timer">
+  <img src=".github/assets/gadget-memo.png" height="120" alt="Voice memo">
+  <img src=".github/assets/gadget-radio.png" height="120" alt="Record player">
+  <img src=".github/assets/gadget-folder.png" height="120" alt="Folder">
+  <img src=".github/assets/gadget-calc.png" height="120" alt="Calculator">
+  <img src=".github/assets/gadget-clock.png" height="120" alt="Desk clock">
+</p>
 
----
+## How it works
 
-## 🛠️ Technology
+```mermaid
+flowchart LR
+    subgraph A["Your computer"]
+        UA["Mosaic<br/>board · pages · files"]
+    end
+    subgraph B["Your teammate's computer"]
+        UB["Mosaic"]
+    end
+    UA <-- "direct, encrypted<br/>board · voice · live pages · files" --> UB
+    UA -. introductions .- R[("Public relays<br/>or the local network")]
+    UB -. introductions .- R
+```
 
-Built with cutting-edge web technologies and wrapped in a high-performance native shell, Mosaic leverages:
+- **Local first.** A board is a CRDT document kept on the computer of everyone on it and synced between them; there is no copy anywhere else.
+- **Peer to peer.** Computers connect directly over WebRTC, encrypted with the board's own key. Public relays (or the local network) only introduce them to each other; they never see the work.
+- **Pages stay with their owner.** A web node runs on its owner's machine. Others receive a live picture of it, never its cookies, passwords or session.
+- **Built with** Electron, React, TypeScript and Yjs.
 
-*   **WebRTC:** For ultra-low latency peer-to-peer data and media streaming.
-*   **CRDTs (Conflict-free Replicated Data Types):** Ensuring consistent state across all users without conflicts.
-*   **GPU Acceleration:** For buttery smooth rendering of complex, media-rich canvases.
+## Pricing
 
----
+**Free** for boards of up to 3 people. **Mosaic Team** is one payment for boards of up to 15 people, with AI agents and a year of updates. Privacy and files are never paid features. Details on [the website](https://www.mosaicanvas.com/#pricing).
 
-### Join the revolution.
-**This is not just work. This is Mosaic.**
+## Privacy
 
-## 📄 Licence
+No accounts, no analytics, no ads, and no servers holding your boards. What little data exists and where it goes is written down in the [privacy policy](https://www.mosaicanvas.com/privacy).
 
-Mosaic © by [Ad Nouveau](https://ad-nouveau.com/)
+## Feedback
+
+Found a bug or have an idea? [Open an issue](https://github.com/canikatik-rgb/mosaic-updater/issues).
+
+## License
+
+Mosaic is proprietary software; this repository hosts its release builds. Using it means agreeing to the [terms of use](https://www.mosaicanvas.com/terms).
+
+<p align="center"><sub>© 2026 Caner Atik</sub></p>
